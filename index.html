@@ -119,7 +119,7 @@
       color: white;
     }
 
-    /* 本期總戰果（純色，顯示全部總和） */
+    /* 本期總戰果 - 純色，顯示全部總和（含已核銷） */
     .total-summary {
       background: var(--primary);
       color: white;
@@ -129,10 +129,23 @@
       text-align: center;
       box-shadow: 0 8px 20px rgba(0,48,135,0.25);
     }
-    .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; font-weight: 600; }
-    .total-amount { font-size: 2.35rem; font-weight: 800; letter-spacing: -1px; }
+    .total-summary h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+      opacity: 0.95;
+      font-weight: 600;
+    }
+    .total-amount {
+      font-size: 2.35rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
 
-    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
     .dash-item {
       background: white;
       padding: 14px;
@@ -140,11 +153,24 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
       border: 1px solid #e5e7eb;
     }
-    .v-amount { font-size: 1.8rem; font-weight: 700; color: #d32f2f; }
-    .s-amount { font-size: 0.95rem; color: #0066cc; margin-top: 4px; }
+    .v-amount {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #d32f2f;
+    }
+    .s-amount {
+      font-size: 0.95rem;
+      color: #0066cc;
+      margin-top: 4px;
+    }
 
     /* 核銷格子 - 立體感加強 + 未核銷顯示綠色剔號 */
-    .mini-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .mini-slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
     .mini-slot {
       flex: 0 0 calc(33.33% - 6px);
       height: 52px;
@@ -160,7 +186,9 @@
       background: #003087;
       color: white;
       position: relative;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08), inset 0 -3px 6px rgba(255,255,255,0.15);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12), 
+                  0 2px 4px rgba(0,0,0,0.08),
+                  inset 0 -3px 6px rgba(255,255,255,0.15);
     }
     .mini-slot.used {
       background: var(--light-gray);
@@ -187,9 +215,11 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .btn-save, .btn-clear {
+    .btn-save {
       width: 100%;
       padding: 16px;
+      background: var(--primary);
+      color: white;
       border: none;
       border-radius: 8px;
       font-size: 1.1rem;
@@ -197,10 +227,12 @@
       margin-top: 8px;
       box-shadow: 0 8px 20px rgba(0,48,135,0.25);
     }
-    .btn-save { background: var(--primary); color: white; }
-    .btn-clear { background: var(--danger); color: white; margin-top: 12px; }
-
-    .status { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 20px 0; }
+    .status {
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
@@ -219,7 +251,6 @@
         </h2>
         <div id="input-list"></div>
         <button class="btn-save" onclick="saveData()">儲存這期戰果</button>
-        <button id="clear-btn" class="btn-clear" onclick="clearMyData()" style="display:none;">🗑️ 清除我的所有資料（開發用）</button>
       </div>
     </div>
 
@@ -423,7 +454,7 @@
       });
 
       apps.forEach(app => {
-        selection[app] = selection[app] || [];
+        if (!selection[app]) selection[app] = [];
         selection[app].sort((a, b) => a.slot_index - b.slot_index);
         renderInputSlots(app);
       });
@@ -473,8 +504,9 @@
       showPage('dash');
     }
 
+    // 【已修正統計部分】只讀取 is_discarded = false 的資料
     async function loadStats() {
-      statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績...</div>';
+      statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績（已排除廢棄資料）...</div>';
 
       const { data } = await _supabase
         .from('lottery_records')
@@ -515,23 +547,8 @@
       statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何有效期數紀錄</p>`;
     }
 
-    async function clearMyData() {
-      if (!confirm('⚠️ 確定要清除你所有的獎券資料嗎？此操作無法復原！')) return;
-      const { error } = await _supabase.from('lottery_records').delete().eq('user_token', myToken);
-      if (error) {
-        showToast('清除失敗，請稍後再試', 'error');
-      } else {
-        showToast('已清除你所有的資料', 'success');
-        await loadData();
-        showPage('input');
-      }
-    }
-
     // 啟動
-    if (isDevMode()) {
-      document.getElementById('nav-stats').style.display = 'flex';
-      document.getElementById('clear-btn').style.display = 'block';
-    }
+    if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
 
     const day = new Date().getDay();
     if ([0, 5, 6].includes(day)) showPage('input');
