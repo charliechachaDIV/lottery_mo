@@ -488,12 +488,18 @@ nav {
       });
 
       document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong>`;
-      // 修改這行，增加製作資訊與 Email
+     // 修改這行，將原來的內建文字替換成這個 HTML 結構
       document.getElementById('user-info').innerHTML = `
-        期數：${period} | ID: ${myToken}<br>
-        <span style="opacity: 0.8; font-size: 0.8rem; margin-top: 5px; display: block;">
-          Made by 蟬知夏 | Support: <a href="mailto:support@charliechacha.com" style="color: inherit; text-decoration: underline;">support@charliechacha.com</a>
-        </span>
+        <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>期數：${period} | ID: ${myToken}</span>
+          <a href="https://www.charliechacha.com/" target="_parent" style="display: flex; align-items: center; text-decoration: none;">
+            <img src="https://www.charliechacha.com/wp-content/uploads/pages/logopic.png" alt="蟬知夏" style="height: 20px; width: auto; opacity: 0.9;">
+          </a>
+        </div>
+        <div style="font-size: 0.8rem; line-height: 1.6;">
+          <span style="opacity: 0.8;">Made by 蟬知夏 | Support:</span> 
+          <a href="mailto:support@charliechacha.com" style="color: inherit; text-decoration: underline; opacity: 0.8;">support@charliechacha.com</a>
+        </div>
       `;
     }
 
