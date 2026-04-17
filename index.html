@@ -1,0 +1,49 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // 1. 初始化連線
+  const _url = 'najwaxbrovbzjqomakqh';
+  const _key = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
+  const supabase = supabase.createClient(_url, _key);
+
+  // 2. 處理匿名 ID (LocalStorage)
+  let myToken = localStorage.getItem('lottery_token');
+  if (!myToken) {
+    myToken = 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('lottery_token', myToken);
+  }
+
+  // 3. 儲存紀錄的函數
+  // 例如：saveRecord('ICBC', '實付', 50)
+  async function saveRecord(tool, type, amount) {
+    const { data, error } = await supabase
+      .from('lottery_records')
+      .insert([{ 
+        user_token: myToken,
+        payment_tool: tool,
+        record_type: type, // '實付' 或 '抽到'
+        amount: parseFloat(amount)
+      }]);
+
+    if (error) {
+      console.error('儲存失敗:', error.message);
+      alert('儲存失敗，請檢查網路！');
+    } else {
+      console.log('儲存成功！');
+      // 儲存成功後，你可以呼叫計算總計的函數
+    }
+  }
+
+  // 4. 讀取紀錄的函數
+  async function fetchMyRecords() {
+    const { data, error } = await supabase
+      .from('lottery_records')
+      .select('*')
+      .eq('user_token', myToken); // 只抓自己的資料
+
+    if (data) {
+      // 在這裡把 data 填入你的 HTML 表格中
+      console.log('我的歷史紀錄:', data);
+    }
+  }
+</script>
