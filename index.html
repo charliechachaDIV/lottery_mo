@@ -42,11 +42,12 @@
     <button onclick="saveAll()">手動儲存全部</button>
     <p class="status">* 資料會自動儲存在雲端，換瀏覽器資料將不互通。</p>
 
-    <script>
-        // --- 1. 請填入你的 Supabase 連線資訊 ---
-        const SUPABASE_URL = 'najwaxbrovbzjqomakqh'; 
+<script>
+        // --- 1. 連線資訊修正 ---
+        // 注意：網址必須完整，且變數名稱改為 _supabase 避免衝突
+        const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. 處理匿名身份 ---
         let myToken = localStorage.getItem('lottery_token');
@@ -73,19 +74,23 @@
 
         // --- 4. 從資料庫讀取舊紀錄 ---
         async function loadData() {
-            const { data, error } = await supabase
-                .from('lottery_records')
-                .select('*')
-                .eq('user_token', myToken);
+            try {
+                const { data, error } = await _supabase
+                    .from('lottery_records')
+                    .select('*')
+                    .eq('user_token', myToken);
 
-            if (data) {
-                data.forEach(item => {
-                    const paidInput = document.querySelector(`.paid[data-tool="${item.payment_tool}"]`);
-                    const rewardInput = document.querySelector(`.reward[data-tool="${item.payment_tool}"]`);
-                    if (paidInput) paidInput.value = item.amount_paid;
-                    if (rewardInput) rewardInput.value = item.reward;
-                });
-                calculateTotal();
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        const paidInput = document.querySelector(`.paid[data-tool="${item.payment_tool}"]`);
+                        const rewardInput = document.querySelector(`.reward[data-tool="${item.payment_tool}"]`);
+                        if (paidInput) paidInput.value = item.amount_paid;
+                        if (rewardInput) rewardInput.value = item.reward;
+                    });
+                    calculateTotal();
+                }
+            } catch (e) {
+                console.error("讀取失敗:", e);
             }
         }
 
@@ -115,9 +120,9 @@
                 });
             });
 
-            // 先刪除舊的，再存入新的 (最簡單的更新方式)
-            await supabase.from('lottery_records').delete().eq('user_token', myToken);
-            const { error } = await supabase.from('lottery_records').insert(records);
+            // 使用修正後的 _supabase 變數
+            await _supabase.from('lottery_records').delete().eq('user_token', myToken);
+            const { error } = await _supabase.from('lottery_records').insert(records);
 
             if (error) alert('儲存失敗: ' + error.message);
             else alert('資料已同步至雲端！');
