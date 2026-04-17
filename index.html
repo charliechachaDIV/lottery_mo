@@ -1,65 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-    <title>我的網頁</title>
-    </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消費大獎賞抽獎紀錄</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background-color: #eee; }
+        input { width: 80%; padding: 5px; text-align: center; border: 1px solid #ddd; }
+        .total-row { background-color: #fff9c4; font-weight: bold; }
+        .status { font-size: 0.8em; color: #666; margin-top: 10px; }
+    </style>
+</head>
 <body>
-    <h2>消費大獎賞紀錄</h2>
-    <div id="user-info"></div>
+
+    <h2>消費大獎賞抽獎紀錄</h2>
+    <div id="user-info" class="status">載入中...</div>
+
     <table>
-        </table>
-    <button onclick="saveAll()">儲存</button>
+        <thead>
+            <tr>
+                <th>支付工具</th>
+                <th>實付金額</th>
+                <th>抽到回饋</th>
+            </tr>
+        </thead>
+        <tbody id="record-table">
+            </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td>總計</td>
+                <td id="total-paid">0</td>
+                <td id="total-reward">0</td>
+            </tr>
+        </tfoot>
+    </table>
 
+    <button onclick="saveAll()">手動儲存全部</button>
+    <p class="status">* 資料會自動儲存在雲端，換瀏覽器資料將不互通。</p>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // --- 1. 請填入你的 Supabase 連線資訊 ---
+        const SUPABASE_URL = 'najwaxbrovbzjqomakqh'; 
+        const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-  // 1. 初始化連線
-  const _url = 'najwaxbrovbzjqomakqh';
-  const _key = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
-  const supabase = supabase.createClient(_url, _key);
+        // --- 2. 處理匿名身份 ---
+        let myToken = localStorage.getItem('lottery_token');
+        if (!myToken) {
+            myToken = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('lottery_token', myToken);
+        }
+        document.getElementById('user-info').innerText = '您的匿名 ID: ' + myToken;
 
-  // 2. 處理匿名 ID (LocalStorage)
-  let myToken = localStorage.getItem('lottery_token');
-  if (!myToken) {
-    myToken = 'user_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('lottery_token', myToken);
-  }
+        // 定義支付工具列表
+        const tools = ['ICBC', 'BOC', 'MPAY', 'LUSO', 'TAI_FUNG'];
 
-  // 3. 儲存紀錄的函數
-  // 例如：saveRecord('ICBC', '實付', 50)
-  async function saveRecord(tool, type, amount) {
-    const { data, error } = await supabase
-      .from('lottery_records')
-      .insert([{ 
-        user_token: myToken,
-        payment_tool: tool,
-        record_type: type, // '實付' 或 '抽到'
-        amount: parseFloat(amount)
-      }]);
+        // --- 3. 初始化表格 ---
+        const tbody = document.getElementById('record-table');
+        tools.forEach(tool => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tool}</td>
+                <td><input type="number" class="paid" data-tool="${tool}" onchange="calculateTotal()" placeholder="0"></td>
+                <td><input type="number" class="reward" data-tool="${tool}" onchange="calculateTotal()" placeholder="0"></td>
+            `;
+            tbody.appendChild(row);
+        });
 
-    if (error) {
-      console.error('儲存失敗:', error.message);
-      alert('儲存失敗，請檢查網路！');
-    } else {
-      console.log('儲存成功！');
-      // 儲存成功後，你可以呼叫計算總計的函數
-    }
-  }
+        // --- 4. 從資料庫讀取舊紀錄 ---
+        async function loadData() {
+            const { data, error } = await supabase
+                .from('lottery_records')
+                .select('*')
+                .eq('user_token', myToken);
 
-  // 4. 讀取紀錄的函數
-  async function fetchMyRecords() {
-    const { data, error } = await supabase
-      .from('lottery_records')
-      .select('*')
-      .eq('user_token', myToken); // 只抓自己的資料
+            if (data) {
+                data.forEach(item => {
+                    const paidInput = document.querySelector(`.paid[data-tool="${item.payment_tool}"]`);
+                    const rewardInput = document.querySelector(`.reward[data-tool="${item.payment_tool}"]`);
+                    if (paidInput) paidInput.value = item.amount_paid;
+                    if (rewardInput) rewardInput.value = item.reward;
+                });
+                calculateTotal();
+            }
+        }
 
-    if (data) {
-      // 在這裡把 data 填入你的 HTML 表格中
-      console.log('我的歷史紀錄:', data);
+        // --- 5. 計算總計 ---
+        function calculateTotal() {
+            let totalPaid = 0;
+            let totalReward = 0;
+            document.querySelectorAll('.paid').forEach(i => totalPaid += Number(i.value || 0));
+            document.querySelectorAll('.reward').forEach(i => totalReward += Number(i.value || 0));
+            
+            document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
+            document.getElementById('total-reward').innerText = totalReward.toFixed(2);
+        }
 
+        // --- 6. 儲存全部資料 ---
+        async function saveAll() {
+            const records = [];
+            tools.forEach(tool => {
+                const paid = document.querySelector(`.paid[data-tool="${tool}"]`).value;
+                const reward = document.querySelector(`.reward[data-tool="${tool}"]`).value;
+                
+                records.push({
+                    user_token: myToken,
+                    payment_tool: tool,
+                    amount_paid: parseFloat(paid) || 0,
+                    reward: parseFloat(reward) || 0
+                });
+            });
+
+            // 先刪除舊的，再存入新的 (最簡單的更新方式)
+            await supabase.from('lottery_records').delete().eq('user_token', myToken);
+            const { error } = await supabase.from('lottery_records').insert(records);
+
+            if (error) alert('儲存失敗: ' + error.message);
+            else alert('資料已同步至雲端！');
+        }
+
+        // 頁面開啟時自動載入
+        loadData();
+    </script>
 </body>
 </html>
-    }
-  }
-</script>
