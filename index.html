@@ -1,3 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消費獎賞助手 - 全同步版</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #007bff; --bg: #f4f7f9; --danger: #d9534f; --success: #28a745; --gray: #adb5bd; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background-color: var(--bg); color: #333; }
+        nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
+        nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 1rem; cursor: pointer; color: #666; }
+        nav button.active { color: var(--primary); font-weight: bold; border-bottom: 3px solid var(--primary); }
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* 基礎樣式 */
+        .app-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .app-name { font-weight: bold; font-size: 1.1rem; }
+        .voucher-slots { display: flex; gap: 8px; margin-bottom: 10px; }
+        
+        /* 格子樣式 - 統一輸入與看板 */
+        .slot { flex: 1; height: 45px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; cursor: pointer; background: #fff; }
+        .slot.filled { border-style: solid; border-color: var(--primary); color: var(--primary); background: #e7f1ff; }
+        .slot.used { background: #e9ecef; color: var(--gray); text-decoration: line-through; border-color: var(--gray); }
+        .slot.filled::after { content: '×'; position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+        .btn-group { display: flex; gap: 5px; }
+        .chip { padding: 10px 5px; border: 1px solid #ddd; background: white; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; text-align: center; }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; }
+        .v-amount { color: var(--danger); font-size: 1.2rem; font-weight: bold; display: block; }
+        .s-amount { color: var(--success); font-size: 0.85rem; }
+
+        .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; font-weight: bold; }
+        .status { font-size: 0.7rem; color: #aaa; text-align: center; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <button id="nav-input" onclick="showPage('input')">輸入券面</button>
+        <button id="nav-dash" onclick="showPage('dash')">核銷看板</button>
+    </nav>
+
+    <div class="container">
+        <div id="page-input" class="page">
+            <div class="card">
+                <h2 style="margin:0">更新券紀錄</h2>
+                <div id="input-list"></div>
+                <button class="btn-save" onclick="saveData()">同步雲端</button>
+            </div>
+        </div>
+
+        <div id="page-dash" class="page">
+            <div class="card">
+                <h2 style="margin:0">核銷看板</h2>
+                <div class="dashboard" id="dashboard-grid"></div>
+            </div>
+        </div>
+        <div id="user-info" class="status">同步中...</div>
+    </div>
+
 <script>
     const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
@@ -217,3 +284,5 @@
 
     loadData();
 </script>
+</body>
+</html>
