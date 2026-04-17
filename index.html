@@ -3,136 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>消費大獎賞抽獎紀錄</title>
+    <title>澳門消費獎賞看板</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
-        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        th { background-color: #eee; }
-        input { width: 80%; padding: 5px; text-align: center; border: 1px solid #ddd; }
-        .total-row { background-color: #fff9c4; font-weight: bold; }
-        .status { font-size: 0.8em; color: #666; margin-top: 10px; }
+        body { font-family: -apple-system, sans-serif; padding: 15px; background-color: #f8f9fa; color: #333; }
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; margin-top: 0; color: #007bff; border-left: 4px solid #007bff; padding-left: 10px; }
+        
+        /* 表格樣式 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
+        th { font-size: 0.85rem; color: #777; font-weight: normal; }
+        input { width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+
+        /* B區：看板樣式 */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #e0e0e0; }
+        .app-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; }
+        .amount-row { display: flex; justify-content: space-between; align-items: baseline; }
+        .v-amount { color: #d9534f; font-size: 1.1rem; font-weight: bold; }
+        .s-amount { color: #28a745; font-size: 0.85rem; }
+        .label { font-size: 0.75rem; color: #999; }
+
+        .btn-save { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; cursor: pointer; }
+        .status { font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <h2>消費大獎賞抽獎紀錄</h2>
-    <div id="user-info" class="status">載入中...</div>
+    <div class="card">
+        <h2>A區：更新券數 (APP 剩餘額度)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>支付平台</th>
+                    <th>券總面額 ($)</th>
+                </tr>
+            </thead>
+            <tbody id="input-table">
+                </tbody>
+        </table>
+        <button class="btn-save" onclick="saveData()">儲存並更新看板</button>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>支付工具</th>
-                <th>實付金額</th>
-                <th>抽到回饋</th>
-            </tr>
-        </thead>
-        <tbody id="record-table">
-            </tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td>總計</td>
-                <td id="total-paid">0</td>
-                <td id="total-reward">0</td>
-            </tr>
-        </tfoot>
-    </table>
+    <div class="card">
+        <h2>B區：核銷看板 (3倍核銷提示)</h2>
+        <div class="dashboard" id="dashboard">
+            </div>
+    </div>
 
-    <button onclick="saveAll()">手動儲存全部</button>
-    <p class="status">* 資料會自動儲存在雲端，換瀏覽器資料將不互通。</p>
+    <div id="user-info" class="status">正在同步雲端資料...</div>
 
-<script>
-        // --- 1. 連線資訊 ---
+    <script>
+        // --- 1. 連線設定 ---
         const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. 處理匿名身份 ---
-        let myToken = localStorage.getItem('lottery_token');
-        if (!myToken) {
-            myToken = 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('lottery_token', myToken);
-        }
-        document.getElementById('user-info').innerText = '您的匿名 ID: ' + myToken;
+        // --- 2. 8大支付平台列表 ---
+        const apps = ['澳門中銀', '工銀e支付', '豐付寶', 'LusoPay', 'MPay', '支付寶(澳門)', 'UePay', '廣發支付'];
+        let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('lottery_token', myToken);
 
-        // --- 3. 更新後的支付工具列表 (對應圖片) ---
-        const tools = [
-            '澳門中銀', 
-            '工銀e支付', 
-            '豐付寶', 
-            'LusoPay', 
-            'MPay', 
-            '支付寶(澳門)', 
-            'UePay', 
-            '廣發支付'
-        ];
+        // --- 3. 初始化畫面 ---
+        const inputTable = document.getElementById('input-table');
+        const dashboard = document.getElementById('dashboard');
 
-        // --- 4. 初始化表格 ---
-        const tbody = document.getElementById('record-table');
-        tools.forEach(tool => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${tool}</td>
-                <td><input type="number" class="paid" data-tool="${tool}" onchange="calculateTotal()" placeholder="0"></td>
-                <td><input type="number" class="reward" data-tool="${tool}" onchange="calculateTotal()" placeholder="0"></td>
+        apps.forEach(app => {
+            // A區輸入框
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${app}</td><td><input type="number" class="v-input" data-app="${app}" placeholder="0" oninput="updateUI()"></td>`;
+            inputTable.appendChild(tr);
+
+            // B區卡片
+            const div = document.createElement('div');
+            div.className = 'dash-item';
+            div.id = `dash-${app}`;
+            div.innerHTML = `
+                <div class="app-name">${app}</div>
+                <div class="amount-row">
+                    <div><span class="label">有券:</span> <span class="v-amount" id="v-${app}">0</span></div>
+                    <div><span class="label">需花:</span> <span class="s-amount" id="s-${app}">0</span></div>
+                </div>
             `;
-            tbody.appendChild(row);
+            dashboard.appendChild(div);
         });
 
-        // --- 5. 從資料庫讀取舊紀錄 ---
-        async function loadData() {
-            try {
-                const { data, error } = await _supabase
-                    .from('lottery_records')
-                    .select('*')
-                    .eq('user_token', myToken);
+        // --- 4. 即時更新 UI 邏輯 ---
+        function updateUI() {
+            apps.forEach(app => {
+                const val = parseFloat(document.querySelector(`input[data-app="${app}"]`).value) || 0;
+                document.getElementById(`v-${app}`).innerText = `$${val}`;
+                document.getElementById(`s-${app}`).innerText = `$${(val * 3).toFixed(1)}`; // 3倍核銷邏輯
+                
+                // 視覺回饋：如果沒券就變淡
+                document.getElementById(`dash-${app}`).style.opacity = val > 0 ? "1" : "0.4";
+            });
+        }
 
-                if (data && data.length > 0) {
-                    data.forEach(item => {
-                        const paidInput = document.querySelector(`.paid[data-tool="${item.payment_tool}"]`);
-                        const rewardInput = document.querySelector(`.reward[data-tool="${item.payment_tool}"]`);
-                        if (paidInput) paidInput.value = item.amount_paid;
-                        if (rewardInput) rewardInput.value = item.reward;
-                    });
-                    calculateTotal();
-                }
-            } catch (e) {
-                console.error("讀取失敗:", e);
+        // --- 5. 雲端同步 (讀取) ---
+        async function loadData() {
+            const { data } = await _supabase.from('lottery_records').select('*').eq('user_token', myToken);
+            if (data) {
+                data.forEach(item => {
+                    const input = document.querySelector(`input[data-app="${item.payment_tool}"]`);
+                    if (input) input.value = item.reward;
+                });
+                updateUI();
+                document.getElementById('user-info').innerText = '匿名 ID: ' + myToken + ' (同步完成)';
             }
         }
 
-        // --- 6. 計算總計 ---
-        function calculateTotal() {
-            let totalPaid = 0;
-            let totalReward = 0;
-            document.querySelectorAll('.paid').forEach(i => totalPaid += Number(i.value || 0));
-            document.querySelectorAll('.reward').forEach(i => totalReward += Number(i.value || 0));
-            
-            document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
-            document.getElementById('total-reward').innerText = totalReward.toFixed(2);
-        }
-
-        // --- 7. 儲存全部資料 ---
-        async function saveAll() {
-            const records = [];
-            tools.forEach(tool => {
-                const paid = document.querySelector(`.paid[data-tool="${tool}"]`).value;
-                const reward = document.querySelector(`.reward[data-tool="${tool}"]`).value;
-                
-                records.push({
-                    user_token: myToken,
-                    payment_tool: tool,
-                    amount_paid: parseFloat(paid) || 0,
-                    reward: parseFloat(reward) || 0
-                });
-            });
+        // --- 6. 雲端同步 (儲存) ---
+        async function saveData() {
+            const records = apps.map(app => ({
+                user_token: myToken,
+                payment_tool: app,
+                reward: parseFloat(document.querySelector(`input[data-app="${app}"]`).value) || 0,
+                amount_paid: 0 // 這裡目前用不到，保留結構
+            }));
 
             await _supabase.from('lottery_records').delete().eq('user_token', myToken);
             const { error } = await _supabase.from('lottery_records').insert(records);
-
-            if (error) alert('儲存失敗: ' + error.message);
-            else alert('資料已同步至雲端！');
+            
+            if (!error) alert('看板已更新並同步！');
+            else alert('錯誤: ' + error.message);
         }
 
         loadData();
