@@ -1,198 +1,219 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>消費獎賞助手 - 實時核銷版</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --primary: #007bff; --bg: #f4f7f9; --danger: #d9534f; --success: #28a745; --gray: #adb5bd; }
-        body { font-family: -apple-system, sans-serif; margin: 0; background-color: var(--bg); color: #333; }
-        nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
-        nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 1rem; cursor: pointer; color: #666; }
-        nav button.active { color: var(--primary); font-weight: bold; border-bottom: 3px solid var(--primary); }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .page { display: none; }
-        .page.active { display: block; }
-        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
-        /* A區：輸入頁 */
-        .app-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .app-name { font-weight: bold; font-size: 1.1rem; }
-        .voucher-slots { display: flex; gap: 8px; margin-bottom: 10px; }
-        .slot { flex: 1; height: 45px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; cursor: pointer; background: #fff; }
-        .slot.filled { border-style: solid; border-color: var(--primary); color: var(--primary); background: #e7f1ff; }
-        .slot.filled::after { content: '×'; position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-        .btn-group { display: flex; gap: 5px; }
-        .chip { padding: 10px 5px; border: 1px solid #ddd; background: white; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; text-align: center; }
+<script>
+    const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        /* B區：看板頁與點擊格 */
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; transition: 0.3s; }
-        .v-amount { color: var(--danger); font-size: 1.2rem; font-weight: bold; display: block; }
-        .s-amount { color: var(--success); font-size: 0.85rem; }
-        
-        .mini-slots { display: flex; gap: 4px; margin-top: 8px; }
-        .mini-slot { flex: 1; height: 30px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #f8f9fa; color: var(--primary); font-weight: bold; }
-        .mini-slot.used { background: #e9ecef; color: var(--gray); text-decoration: line-through; border-style: dashed; }
+    const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
+    const denominations = [10, 20, 50, 100, 200];
 
-        .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; font-weight: bold; }
-        .status { font-size: 0.7rem; color: #aaa; text-align: center; margin: 20px 0; }
-    </style>
-</head>
-<body>
+    let selection = {};           // { 'MPay': [{val:10, used:false}, ...] }
+    let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('lottery_token', myToken);
 
-    <nav>
-        <button id="nav-input" onclick="showPage('input')">輸入券數</button>
-        <button id="nav-dash" onclick="showPage('dash')">查看看板</button>
-    </nav>
+    const inputList = document.getElementById('input-list');
+    const dashGrid = document.getElementById('dashboard-grid');
 
-    <div class="container">
-        <div id="page-input" class="page">
-            <div class="card">
-                <h2 style="margin:0; display:flex; justify-content:space-between;">
-                    更新本週紀錄 <small id="today-hint" style="color:var(--success); font-size:0.8rem;"></small>
-                </h2>
-                <div id="input-list"></div>
-                <button class="btn-save" onclick="saveData()">儲存明細</button>
-            </div>
-        </div>
+    // ==================== 關鍵函數：澳門期數自動計算 ====================
+    function getMacauPeriodTag() {
+        const now = new Date();
+        const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+        const macauTime = new Date(utcTime + 8 * 3600000); // UTC+8
+        macauTime.setHours(0, 0, 0, 0);
 
-        <div id="page-dash" class="page">
-            <div class="card">
-                <h2 style="margin-top:0">核銷看板 (點擊明細扣除)</h2>
-                <div class="dashboard" id="dashboard-grid"></div>
-            </div>
-        </div>
-        <div id="user-info" class="status">載入中...</div>
-    </div>
+        const day = macauTime.getDay(); // 0=週日 ... 5=週五
+        const daysToSubtract = (day - 5 + 7) % 7;
+        macauTime.setDate(macauTime.getDate() - daysToSubtract);
 
-    <script>
-        const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const y = macauTime.getFullYear();
+        const m = String(macauTime.getMonth() + 1).padStart(2, '0');
+        const d = String(macauTime.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
 
-        const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
-        const denominations = [10, 20, 50, 100, 200];
-        let selection = {}; // 格式: { 'MPay': [{val:10, used:false}, {val:50, used:false}] }
-        let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('lottery_token', myToken);
+    // ==================== 初始化 ====================
+    apps.forEach(app => {
+        selection[app] = [];
+        // 輸入頁
+        inputList.innerHTML += `
+            <div class="app-row">
+                <div class="app-info">
+                    <span class="app-name">${app}</span>
+                    <span id="total-${app}" style="color:var(--primary); font-weight:bold;">$0</span>
+                </div>
+                <div class="voucher-slots" id="slots-${app}"></div>
+                <div class="btn-group">
+                    ${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}', ${d})">${d}</button>`).join('')}
+                </div>
+            </div>`;
+        // 看板頁
+        dashGrid.innerHTML += `
+            <div class="dash-item" id="card-${app}">
+                <div class="app-name" style="font-size:0.8rem">${app}</div>
+                <span class="v-amount" id="v-${app}">$0</span>
+                <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
+                <div class="mini-slots" id="mini-${app}"></div>
+            </div>`;
+        renderInputSlots(app);
+    });
 
-        const inputList = document.getElementById('input-list');
-        const dashGrid = document.getElementById('dashboard-grid');
+    // ==================== A區：輸入頁 ====================
+    function renderInputSlots(app) {
+        const container = document.getElementById(`slots-${app}`);
+        container.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            const item = selection[app][i];
+            const slot = document.createElement('div');
+            slot.className = `slot ${item ? 'filled' : ''}`;
+            slot.innerHTML = item ? `$${item.val}` : '';
+            if (item) slot.onclick = () => { selection[app].splice(i, 1); renderInputSlots(app); };
+            container.appendChild(slot);
+        }
+        document.getElementById(`total-${app}`).innerText = 
+            `$${selection[app].reduce((sum, v) => sum + v.val, 0)}`;
+    }
 
-        // 初始化
+    function addVoucher(app, val) {
+        if (selection[app].length < 3) {
+            selection[app].push({ val: val, used: false });
+            renderInputSlots(app);
+        }
+    }
+
+    // ==================== B區：看板頁 + 即時核銷 ====================
+    function renderDashCard(app) {
+        const container = document.getElementById(`mini-${app}`);
+        container.innerHTML = '';
+
+        const activeVouchers = selection[app].filter(v => !v.used);
+        const activeTotal = activeVouchers.reduce((a, b) => a + b.val, 0);
+
+        document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
+        document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
+        document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
+
+        selection[app].forEach((item, index) => {
+            const mini = document.createElement('div');
+            mini.className = `mini-slot ${item.used ? 'used' : ''}`;
+            mini.innerText = `$${item.val}`;
+            mini.onclick = () => toggleUsed(app, index);   // ← 立即寫入資料庫
+            container.appendChild(mini);
+        });
+    }
+
+    async function toggleUsed(app, slotIndex) {
+        const item = selection[app][slotIndex];
+        if (!item) return;
+
+        const period = getMacauPeriodTag();
+        const newPaid = item.used ? 0 : 1;
+        item.used = !item.used;
+
+        const { error } = await _supabase
+            .from('lottery_records')
+            .update({ amount_paid: newPaid })
+            .eq('user_token', myToken)
+            .eq('period_tag', period)
+            .eq('payment_tool', app)
+            .eq('slot_index', slotIndex);
+
+        if (error) {
+            console.error(error);
+            item.used = !item.used; // 還原
+            alert('⚠️ 核銷更新失敗，請稍後再試');
+            return;
+        }
+        renderDashCard(app);
+    }
+
+    function showPage(pageName) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(`page-${pageName}`).classList.add('active');
+        document.getElementById(`nav-${pageName}`).classList.add('active');
+
+        if (pageName === 'dash') apps.forEach(app => renderDashCard(app));
+    }
+
+    // ==================== 資料存取（已完全符合 TODO） ====================
+    async function loadData() {
+        const period = getMacauPeriodTag();
+        const { data, error } = await _supabase
+            .from('lottery_records')
+            .select('*')
+            .eq('user_token', myToken)
+            .eq('period_tag', period);
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        const temp = {};
+        (data || []).forEach(item => {
+            if (!temp[item.payment_tool]) temp[item.payment_tool] = [];
+            temp[item.payment_tool].push({
+                val: item.reward,
+                used: item.amount_paid === 1,
+                slot_index: item.slot_index
+            });
+        });
+
         apps.forEach(app => {
-            selection[app] = [];
-            inputList.innerHTML += `
-                <div class="app-row">
-                    <div class="app-info"><span class="app-name">${app}</span><span id="total-${app}" style="color:var(--primary); font-weight:bold;">$0</span></div>
-                    <div class="voucher-slots" id="slots-${app}"></div>
-                    <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}', ${d})">${d}</button>`).join('')}</div>
-                </div>`;
-            
-            dashGrid.innerHTML += `
-                <div class="dash-item" id="card-${app}">
-                    <div class="app-name" style="font-size:0.8rem">${app}</div>
-                    <span class="v-amount" id="v-${app}">$0</span>
-                    <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
-                    <div class="mini-slots" id="mini-${app}"></div>
-                </div>`;
+            if (temp[app]) {
+                temp[app].sort((a, b) => a.slot_index - b.slot_index); // 格子鎖定
+                selection[app] = temp[app].map(({ val, used }) => ({ val, used }));
+            } else {
+                selection[app] = []; // 無資料 → 自動清空
+            }
             renderInputSlots(app);
         });
 
-        // --- A區 邏輯 ---
-        function renderInputSlots(app) {
-            const container = document.getElementById(`slots-${app}`);
-            container.innerHTML = '';
-            for (let i = 0; i < 3; i++) {
-                const item = selection[app][i];
-                const slot = document.createElement('div');
-                slot.className = `slot ${item ? 'filled' : ''}`;
-                slot.innerHTML = item ? `$${item.val}` : '';
-                slot.onclick = () => { if(item) { selection[app].splice(i, 1); renderInputSlots(app); } };
-                container.appendChild(slot);
-            }
-            document.getElementById(`total-${app}`).innerText = `$${selection[app].reduce((a, b) => a + b.val, 0)}`;
-        }
+        // UX 提示
+        document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong> <span style="color:var(--success)">✓</span>`;
+        document.getElementById('user-info').innerText = `期數：${period} | ID: ${myToken}`;
+    }
 
-        function addVoucher(app, val) {
-            if (selection[app].length < 3) {
-                selection[app].push({ val: val, used: false });
-                renderInputSlots(app);
-            }
-        }
+    async function saveData() {
+        const btn = event.currentTarget;
+        btn.innerText = "儲存中...";
+        btn.disabled = true;
 
-        // --- B區 邏輯 ---
-        function renderDashCard(app) {
-            const container = document.getElementById(`mini-${app}`);
-            container.innerHTML = '';
-            
-            // 計算「未核銷」的總額
-            const activeVouchers = selection[app].filter(v => !v.used);
-            const activeTotal = activeVouchers.reduce((a, b) => a + b.val, 0);
+        const period = getMacauPeriodTag();
 
-            // 更新看板金額
-            document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
-            document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
-            document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
+        // 只清除當前期數
+        await _supabase
+            .from('lottery_records')
+            .delete()
+            .eq('user_token', myToken)
+            .eq('period_tag', period);
 
-            // 生成小點擊格
+        const records = [];
+        apps.forEach(app => {
             selection[app].forEach((item, index) => {
-                const mini = document.createElement('div');
-                mini.className = `mini-slot ${item.used ? 'used' : ''}`;
-                mini.innerText = `$${item.val}`;
-                mini.onclick = () => {
-                    item.used = !item.used; // 切換狀態
-                    renderDashCard(app); // 重新計算並渲染該卡片
-                };
-                container.appendChild(mini);
-            });
-        }
-
-        function showPage(pageName) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById(`page-${pageName}`).classList.add('active');
-            document.getElementById(`nav-${pageName}`).classList.add('active');
-            if(pageName === 'dash') apps.forEach(app => renderDashCard(app));
-        }
-
-        // --- 數據處理 ---
-        async function loadData() {
-            const { data } = await _supabase.from('lottery_records').select('*').eq('user_token', myToken);
-            if (data) {
-                apps.forEach(app => selection[app] = []);
-                data.forEach(item => {
-                    if (selection[item.payment_tool].length < 3) {
-                        selection[item.payment_tool].push({ val: item.reward, used: false });
-                    }
-                });
-                apps.forEach(app => renderInputSlots(app));
-                document.getElementById('user-info').innerText = `系統偵測：星期${"日一二三四五六"[new Date().getDay()]} | ID: ${myToken}`;
-            }
-        }
-
-        async function saveData() {
-            const btn = event.currentTarget;
-            btn.innerText = "儲存中...";
-            const records = [];
-            apps.forEach(app => {
-                selection[app].forEach(item => {
-                    records.push({ user_token: myToken, payment_tool: app, reward: item.val, amount_paid: 0 });
+                records.push({
+                    user_token: myToken,
+                    payment_tool: app,
+                    reward: item.val,
+                    amount_paid: item.used ? 1 : 0,
+                    period_tag: period,
+                    slot_index: index
                 });
             });
-            await _supabase.from('lottery_records').delete().eq('user_token', myToken);
-            if (records.length > 0) await _supabase.from('lottery_records').insert(records);
-            btn.innerText = "儲存明細";
-            showPage('dash');
+        });
+
+        if (records.length > 0) {
+            await _supabase.from('lottery_records').insert(records);
         }
 
-        // 初始自動分頁
-        const day = new Date().getDay();
-        if ([0, 5, 6].includes(day)) showPage('input'); else showPage('dash');
-        loadData();
-    </script>
-</body>
-</html>
+        btn.innerText = "儲存明細";
+        btn.disabled = false;
+        showPage('dash');
+    }
+
+    // ==================== 啟動 ====================
+    const day = new Date().getDay();
+    if ([0, 5, 6].includes(day)) showPage('input');
+    else showPage('dash');
+
+    loadData();
+</script>
