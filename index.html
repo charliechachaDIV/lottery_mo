@@ -15,197 +15,42 @@
       --gray: #666666;
       --light-gray: #f0f0f0;
     }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-      margin: 0;
-      background: #f4f6f9;
-      color: #1f2937;
-    }
-    nav {
-      display: flex;
-      background: #ffffff;
-      border-bottom: 1px solid #d1d5db;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    nav button {
-      flex: 1;
-      padding: 15px 8px;
-      border: none;
-      background: none;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    nav button.active {
-      color: var(--primary);
-      border-bottom: 4px solid var(--primary);
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; }
+    nav { display: flex; background: #ffffff; border-bottom: 1px solid #d1d5db; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    nav button { flex: 1; padding: 15px 8px; border: none; background: none; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    nav button.active { color: var(--primary); border-bottom: 4px solid var(--primary); }
     .container { padding: 12px; max-width: 620px; margin: auto; }
     .page { display: none; }
     .page.active { display: block; }
-    .card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      margin-bottom: 18px;
-      border: 1px solid #e5e7eb;
-    }
+    .card { background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 18px; border: 1px solid #e5e7eb; }
 
-    /* 輸入頁 */
     .app-row { padding: 14px 0; border-bottom: 1px solid #e5e7eb; }
     .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .app-name { font-size: 1.15rem; font-weight: 700; color: #1f2937; }
     .voucher-slots { display: flex; gap: 10px; margin-bottom: 12px; }
-    .slot {
-      flex: 1;
-      height: 56px;
-      border: 2px solid #d1d5db;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.35rem;
-      font-weight: 700;
-      background: #fff;
-      transition: all 0.3s;
-      position: relative;
-    }
-    .slot.filled {
-      border-color: var(--primary);
-      background: #e3f0ff;
-      color: var(--primary);
-    }
-    .slot.filled::after {
-      content: '×';
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: var(--danger);
-      color: white;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .slot { flex: 1; height: 56px; border: 2px solid #d1d5db; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative; }
+    .slot.filled { border-color: var(--primary); background: #e3f0ff; color: var(--primary); }
+    .slot.filled::after { content: '×'; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; }
 
-    .chip {
-      padding: 12px 8px;
-      border: 1px solid #d1d5db;
-      background: white;
-      border-radius: 8px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      cursor: pointer;
-      flex: 1;
-      text-align: center;
-      transition: all 0.2s;
-    }
-    .chip:active {
-      transform: scale(0.95);
-      background: var(--primary);
-      color: white;
-    }
+    .chip { padding: 12px 8px; border: 1px solid #d1d5db; background: white; border-radius: 8px; font-size: 1.05rem; font-weight: 600; cursor: pointer; flex: 1; text-align: center; transition: all 0.2s; }
+    .chip:active { transform: scale(0.95); background: var(--primary); color: white; }
 
-    /* 核銷戰場 - 本期總戰果（改為純色） */
-    .total-summary {
-      background: var(--primary);        /* ← 改成純色 */
-      color: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,48,135,0.25);
-    }
-    .total-summary h3 {
-      margin: 0 0 6px;
-      font-size: 1.05rem;
-      opacity: 0.95;
-      font-weight: 600;
-    }
-    .total-amount {
-      font-size: 2.35rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
+    /* 本期總戰果 - 純色 */
+    .total-summary { background: var(--primary); color: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,48,135,0.25); }
+    .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; font-weight: 600; }
+    .total-amount { font-size: 2.35rem; font-weight: 800; letter-spacing: -1px; }
 
-    .dashboard {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .dash-item {
-      background: white;
-      padding: 14px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 1px solid #e5e7eb;
-    }
-    .v-amount {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #d32f2f;
-    }
-    .s-amount {
-      font-size: 0.95rem;
-      color: #0066cc;
-      margin-top: 4px;
-    }
+    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dash-item { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+    .v-amount { font-size: 1.8rem; font-weight: 700; color: #d32f2f; }
+    .s-amount { font-size: 0.95rem; color: #0066cc; margin-top: 4px; }
 
-    /* 核銷格子 */
-    .mini-slots {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .mini-slot {
-      flex: 0 0 calc(33.33% - 6px);
-      height: 52px;
-      border: 2px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: #003087;
-      color: white;
-    }
-    .mini-slot.used {
-      background: var(--light-gray);
-      color: var(--gray);
-      border-color: #d1d5db;
-      text-decoration: line-through 3px;
-    }
+    .mini-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .mini-slot { flex: 0 0 calc(33.33% - 6px); height: 52px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; background: #003087; color: white; }
+    .mini-slot.used { background: var(--light-gray); color: var(--gray); border-color: #d1d5db; text-decoration: line-through 3px; }
 
-    .btn-save {
-      width: 100%;
-      padding: 16px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-top: 8px;
-      box-shadow: 0 4px 12px rgba(0,48,135,0.25);
-    }
-    .status {
-      font-size: 0.85rem;
-      color: #6b7280;
-      text-align: center;
-      margin: 20px 0;
-    }
+    .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; margin-top: 8px; box-shadow: 0 4px 12px rgba(0,48,135,0.25); }
+    .status { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 20px 0; }
   </style>
 </head>
 <body>
@@ -290,26 +135,10 @@
       return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
     }
 
-    // 初始化介面
     apps.forEach(app => {
       selection[app] = [];
-      inputList.innerHTML += `
-        <div class="app-row">
-          <div class="app-info">
-            <span class="app-name">${app}</span>
-            <span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span>
-          </div>
-          <div class="voucher-slots" id="slots-${app}"></div>
-          <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div>
-        </div>`;
-
-      dashGrid.innerHTML += `
-        <div class="dash-item" id="card-${app}">
-          <div class="app-name" style="font-size:0.95rem">${app}</div>
-          <span class="v-amount" id="v-${app}">$0</span>
-          <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
-          <div class="mini-slots" id="mini-${app}"></div>
-        </div>`;
+      inputList.innerHTML += `<div class="app-row"><div class="app-info"><span class="app-name">${app}</span><span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span></div><div class="voucher-slots" id="slots-${app}"></div><div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div></div>`;
+      dashGrid.innerHTML += `<div class="dash-item" id="card-${app}"><div class="app-name" style="font-size:0.95rem">${app}</div><span class="v-amount" id="v-${app}">$0</span><div class="s-amount">需花: <span id="s-${app}">$0</span></div><div class="mini-slots" id="mini-${app}"></div></div>`;
       renderInputSlots(app);
     });
 
@@ -321,10 +150,7 @@
         const slot = document.createElement('div');
         slot.className = `slot ${item ? 'filled' : ''}`;
         slot.innerHTML = item ? `$${item.val}` : '';
-        if (item) slot.onclick = () => {
-          selection[app].splice(i, 1);
-          renderInputSlots(app);
-        };
+        if (item) slot.onclick = () => { selection[app].splice(i, 1); renderInputSlots(app); };
         container.appendChild(slot);
       }
       document.getElementById(`total-${app}`).innerText = `$${selection[app].reduce((sum, v) => sum + v.val, 0)}`;
@@ -344,7 +170,6 @@
       container.innerHTML = '';
       const activeVouchers = selection[app].filter(v => !v.used);
       const activeTotal = activeVouchers.reduce((a, b) => a + b.val, 0);
-
       document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
       document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
       document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
@@ -361,11 +186,9 @@
     async function toggleUsed(app, slotIndex) {
       const item = selection[app][slotIndex];
       if (!item) return;
-
       const period = getMacauPeriodTag();
       const targetPaid = item.used ? 0 : 1;
       const oldUsed = item.used;
-
       item.used = !item.used;
 
       const { error } = await _supabase.from('lottery_records')
@@ -373,14 +196,14 @@
         .eq('user_token', myToken)
         .eq('period_tag', period)
         .eq('payment_tool', app)
-        .eq('slot_index', slotIndex);
+        .eq('slot_index', slotIndex)
+        .eq('is_discarded', false);   // 只操作有效資料
 
       if (error) {
         item.used = oldUsed;
         showToast('核銷失敗，請稍後再試', 'error');
         return;
       }
-
       renderDashCard(app);
       updateGrandTotal();
       showToast(item.used ? '已核銷' : '已取消核銷');
@@ -401,11 +224,7 @@
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       document.getElementById(`page-${pageName}`).classList.add('active');
       document.getElementById(`nav-${pageName}`).classList.add('active');
-
-      if (pageName === 'dash') {
-        apps.forEach(app => renderDashCard(app));
-        updateGrandTotal();
-      }
+      if (pageName === 'dash') { apps.forEach(app => renderDashCard(app)); updateGrandTotal(); }
       if (pageName === 'stats') loadStats();
     }
 
@@ -415,14 +234,11 @@
         .from('lottery_records')
         .select('*')
         .eq('user_token', myToken)
-        .eq('period_tag', period);
+        .eq('period_tag', period)
+        .eq('is_discarded', false);   // ← 只讀有效資料
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+      if (error) { console.error(error); return; }
 
-      // 重置 selection
       apps.forEach(app => selection[app] = []);
 
       (data || []).forEach(item => {
@@ -434,14 +250,9 @@
         });
       });
 
-      // 確保每個 app 都有最多 3 個 slot
       apps.forEach(app => {
         if (!selection[app]) selection[app] = [];
         selection[app].sort((a, b) => a.slot_index - b.slot_index);
-        while (selection[app].length < 3) {
-          selection[app].push(null); // 空位
-        }
-        selection[app] = selection[app].slice(0, 3).filter(Boolean); // 移除多餘 null
         renderInputSlots(app);
       });
 
@@ -457,13 +268,22 @@
 
       const period = getMacauPeriodTag();
 
-      // 先刪除舊資料
-      await _supabase.from('lottery_records')
-        .delete()
+      // 1. 把本期所有「有效」資料標記為廢棄
+      const { error: updateError } = await _supabase
+        .from('lottery_records')
+        .update({ is_discarded: true })
         .eq('user_token', myToken)
-        .eq('period_tag', period);
+        .eq('period_tag', period)
+        .eq('is_discarded', false);
 
-      // 準備新資料
+      if (updateError) {
+        showToast('更新失敗，請稍後再試', 'error');
+        btn.innerText = originalText;
+        btn.disabled = false;
+        return;
+      }
+
+      // 2. 插入新資料
       const records = [];
       apps.forEach(app => {
         selection[app].forEach((item, index) => {
@@ -473,14 +293,15 @@
             reward: item.val,
             amount_paid: item.used ? 1 : 0,
             period_tag: period,
-            slot_index: index
+            slot_index: index,
+            is_discarded: false   // 新資料一定是有效
           });
         });
       });
 
       if (records.length > 0) {
-        const { error } = await _supabase.from('lottery_records').insert(records);
-        if (error) {
+        const { error: insertError } = await _supabase.from('lottery_records').insert(records);
+        if (insertError) {
           showToast('儲存失敗，請稍後再試', 'error');
           btn.innerText = originalText;
           btn.disabled = false;
@@ -492,16 +313,15 @@
       btn.innerText = originalText;
       btn.disabled = false;
 
-      // 儲存後立即重新載入，確保輸入頁與核銷頁同步
-      await loadData();
+      await loadData();   // 立即重新載入有效資料
       showPage('dash');
     }
 
     async function loadStats() {
+      // 統計頁暫時維持原樣（weekly_report 表）
       statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績...</div>';
       const { data } = await _supabase.from('weekly_report').select('*').order('period_tag', { ascending: false });
 
-      // ... (stats 部分保持不變)
       const periods = {};
       (data || []).forEach(row => {
         if (!periods[row.period_tag]) periods[row.period_tag] = {};
@@ -535,9 +355,7 @@
       statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何期數紀錄</p>`;
     }
 
-    // 啟動
     if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
-
     const day = new Date().getDay();
     if ([0, 5, 6].includes(day)) showPage('input');
     else showPage('dash');
