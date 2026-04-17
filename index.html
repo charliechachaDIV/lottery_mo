@@ -248,11 +248,21 @@ nav {
       box-shadow: 0 8px 20px rgba(0,48,135,0.25);
     }
     .status {
-      font-size: 0.8rem;   /* 字體縮小更專業 */
-      color: #9ca3af;     /* 顏色變淡，不搶戲 */
+      font-size: 0.8rem;
+      /* 這裡設定第一行（期數）的顏色 */
+      color: #4b5563; 
       text-align: center;
-      margin: 30px 0 20px; /* 增加上方間距，與看板區隔開 */
-      line-height: 1.6;    /* 讓兩行字之間有呼吸感 */
+      margin: 35px 0 25px;
+      line-height: 1.8;
+    }
+    
+    /* 專門針對第二行 Made by 的顏色調整 */
+    .status span, .status a {
+      color: #6b7280 !important; 
+    }
+    
+    .status a:hover {
+      color: #003087 !important; /* 滑鼠移上去 Email 時變藍色，增加互動感 */
     }
   </style>
 </head>
