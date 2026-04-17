@@ -3,105 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>澳門消費獎賞看板</title>
+    <title>消費獎賞助手</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 15px; background-color: #f8f9fa; color: #333; }
-        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { font-size: 1.2rem; margin-top: 0; color: #007bff; border-left: 4px solid #007bff; padding-left: 10px; }
+        :root { --primary: #007bff; --bg: #f4f7f9; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background-color: var(--bg); color: #333; }
         
-        /* 表格樣式 */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
-        th { font-size: 0.85rem; color: #777; font-weight: normal; }
-        input { width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+        /* 導航欄 */
+        nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
+        nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 1rem; cursor: pointer; color: #666; }
+        nav button.active { color: var(--primary); font-weight: bold; border-bottom: 3px solid var(--primary); }
 
-        /* B區：看板樣式 */
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* 卡片樣式 */
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { font-size: 1.1rem; margin-top: 0; display: flex; justify-content: space-between; }
+        
+        /* 輸入頁樣式 */
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 12px 5px; border-bottom: 1px solid #f0f0f0; }
+        input { width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
+
+        /* 看板頁樣式 */
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #e0e0e0; }
-        .app-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; }
-        .amount-row { display: flex; justify-content: space-between; align-items: baseline; }
-        .v-amount { color: #d9534f; font-size: 1.1rem; font-weight: bold; }
+        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; }
+        .app-name { font-size: 0.85rem; font-weight: bold; color: #555; }
+        .v-amount { color: #d9534f; font-size: 1.2rem; font-weight: bold; display: block; }
         .s-amount { color: #28a745; font-size: 0.85rem; }
-        .label { font-size: 0.75rem; color: #999; }
 
-        .btn-save { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; cursor: pointer; }
-        .status { font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 10px; }
+        .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; }
+        .status { font-size: 0.7rem; color: #aaa; text-align: center; margin-top: 20px; }
+        .day-tip { font-size: 0.8rem; font-weight: normal; color: #28a745; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>A區：更新券數 (APP 剩餘額度)</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>支付平台</th>
-                    <th>券總面額 ($)</th>
-                </tr>
-            </thead>
-            <tbody id="input-table">
-                </tbody>
-        </table>
-        <button class="btn-save" onclick="saveData()">儲存並更新看板</button>
-    </div>
+    <nav>
+        <button id="nav-input" onclick="showPage('input')">輸入券數</button>
+        <button id="nav-dash" onclick="showPage('dash')">查看看板</button>
+    </nav>
 
-    <div class="card">
-        <h2>B區：核銷看板 (3倍核銷提示)</h2>
-        <div class="dashboard" id="dashboard">
+    <div class="container">
+        <div id="page-input" class="page">
+            <div class="card">
+                <h2>更新本週紀錄 <span id="today-hint" class="day-tip"></span></h2>
+                <table>
+                    <tbody id="input-table"></tbody>
+                </table>
+                <button class="btn-save" onclick="saveData()">同步到雲端</button>
             </div>
-    </div>
+        </div>
 
-    <div id="user-info" class="status">正在同步雲端資料...</div>
+        <div id="page-dash" class="page">
+            <div class="card">
+                <h2>核銷進度 ($3倍門檻)</h2>
+                <div class="dashboard" id="dashboard-grid"></div>
+            </div>
+        </div>
+
+        <div id="user-info" class="status">讀取中...</div>
+    </div>
 
     <script>
-        // --- 1. 連線設定 ---
         const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. 8大支付平台列表 ---
+        // 8大平台
         const apps = ['澳門中銀', '工銀e支付', '豐付寶', 'LusoPay', 'MPay', '支付寶(澳門)', 'UePay', '廣發支付'];
         let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('lottery_token', myToken);
 
-        // --- 3. 初始化畫面 ---
+        // --- 初始化 UI ---
         const inputTable = document.getElementById('input-table');
-        const dashboard = document.getElementById('dashboard');
+        const dashGrid = document.getElementById('dashboard-grid');
 
         apps.forEach(app => {
-            // A區輸入框
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${app}</td><td><input type="number" class="v-input" data-app="${app}" placeholder="0" oninput="updateUI()"></td>`;
-            inputTable.appendChild(tr);
-
-            // B區卡片
-            const div = document.createElement('div');
-            div.className = 'dash-item';
-            div.id = `dash-${app}`;
-            div.innerHTML = `
-                <div class="app-name">${app}</div>
-                <div class="amount-row">
-                    <div><span class="label">有券:</span> <span class="v-amount" id="v-${app}">0</span></div>
-                    <div><span class="label">需花:</span> <span class="s-amount" id="s-${app}">0</span></div>
-                </div>
-            `;
-            dashboard.appendChild(div);
+            // 建立輸入列
+            inputTable.innerHTML += `<tr><td>${app}</td><td align="right"><input type="number" class="v-input" data-app="${app}" placeholder="0" oninput="updateCalculations()"> 元</td></tr>`;
+            // 建立看板卡片
+            dashGrid.innerHTML += `
+                <div class="dash-item" id="card-${app}">
+                    <div class="app-name">${app}</div>
+                    <span class="v-amount" id="v-${app}">$0</span>
+                    <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
+                </div>`;
         });
 
-        // --- 4. 即時更新 UI 邏輯 ---
-        function updateUI() {
+        function updateCalculations() {
             apps.forEach(app => {
                 const val = parseFloat(document.querySelector(`input[data-app="${app}"]`).value) || 0;
                 document.getElementById(`v-${app}`).innerText = `$${val}`;
-                document.getElementById(`s-${app}`).innerText = `$${(val * 3).toFixed(1)}`; // 3倍核銷邏輯
-                
-                // 視覺回饋：如果沒券就變淡
-                document.getElementById(`dash-${app}`).style.opacity = val > 0 ? "1" : "0.4";
+                document.getElementById(`s-${app}`).innerText = `$${(val * 3).toFixed(0)}`;
+                document.getElementById(`card-${app}`).style.opacity = val > 0 ? "1" : "0.3";
             });
         }
 
-        // --- 5. 雲端同步 (讀取) ---
+        // --- 分頁邏輯 ---
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`page-${pageName}`).classList.add('active');
+            document.getElementById(`nav-${pageName}`).classList.add('active');
+        }
+
+        // --- 自動判定日期 ---
+        function initDefaultPage() {
+            const day = new Date().getDay(); // 0是週日, 1-6是週一至六
+            const isWeekend = [0, 5, 6].includes(day);
+            
+            const hint = document.getElementById('today-hint');
+            if (isWeekend) {
+                hint.innerText = "(週末輸入模式)";
+                showPage('input');
+            } else {
+                showPage('dash');
+            }
+        }
+
+        // --- 資料同步 ---
         async function loadData() {
             const { data } = await _supabase.from('lottery_records').select('*').eq('user_token', myToken);
             if (data) {
@@ -109,28 +133,53 @@
                     const input = document.querySelector(`input[data-app="${item.payment_tool}"]`);
                     if (input) input.value = item.reward;
                 });
-                updateUI();
-                document.getElementById('user-info').innerText = '匿名 ID: ' + myToken + ' (同步完成)';
+                updateCalculations();
+                document.getElementById('user-info').innerText = '雲端同步中 (ID: ' + myToken + ')';
             }
         }
 
-        // --- 6. 雲端同步 (儲存) ---
         async function saveData() {
+            const btn = event.target;
+            btn.innerText = "儲存中...";
             const records = apps.map(app => ({
                 user_token: myToken,
                 payment_tool: app,
                 reward: parseFloat(document.querySelector(`input[data-app="${app}"]`).value) || 0,
-                amount_paid: 0 // 這裡目前用不到，保留結構
+                amount_paid: 0
             }));
 
             await _supabase.from('lottery_records').delete().eq('user_token', myToken);
             const { error } = await _supabase.from('lottery_records').insert(records);
             
-            if (!error) alert('看板已更新並同步！');
-            else alert('錯誤: ' + error.message);
+            btn.innerText = "同步到雲端";
+            if (!error) {
+                alert('已儲存！即將跳轉至看板。');
+                showPage('dash');
+            }
         }
 
+        initDefaultPage();
         loadData();
     </script>
+    
+    // --- 自動判定日期 ---
+function initDefaultPage() {
+    const now = new Date();
+    const day = now.getDay(); 
+    const dayNames = ["日", "一", "二", "三", "四", "五", "六"];
+    const isWeekend = [0, 5, 6].includes(day);
+    
+    // 在狀態列顯示目前的判斷結果，讓你校對
+    document.getElementById('user-info').innerText = 
+        `系統時間：星期${dayNames[day]} | 匿名 ID: ${myToken}`;
+
+    const hint = document.getElementById('today-hint');
+    if (isWeekend) {
+        hint.innerText = "(週末輸入模式)";
+        showPage('input');
+    } else {
+        showPage('dash');
+    }
+}
 </body>
 </html>
