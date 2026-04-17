@@ -30,15 +30,30 @@
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
     }
-    nav {
-      display: flex;
-      background: #ffffff;
-      border-bottom: 1px solid #d1d5db;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
+    /* 修改 nav 樣式 */
+nav {
+  display: flex;
+  align-items: center; /* 關鍵：垂直居中 */
+  background: #ffffff;
+  border-bottom: 1px solid #d1d5db;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 0 10px; /* 給左右留點空間 */
+}
+
+/* 新增 LOGO 樣式 */
+.nav-logo {
+  height: 28px; /* 關鍵：強制高度，讓它變小 */
+  width: auto; /* 寬度自動縮放 */
+  margin-right: 15px; /* 給 LOGO 右邊留白 */
+  transition: opacity 0.2s; /* 懸停效果動畫 */
+}
+
+.nav-logo-link:hover .nav-logo {
+  opacity: 0.8; /* 懸停時半透明 */
+}
     nav button {
       flex: 1;
       padding: 15px 8px;
@@ -242,6 +257,10 @@
 </head>
 <body>
   <nav id="main-nav">
+    <a href="https://www.charliechacha.com/" target="_parent" style="margin-right: 15px; display: flex; align-items: center;">
+    <img src="https://www.charliechacha.com/wp-content/uploads/pages/logoword.png" alt="YieldSpot" class="nav-logo">
+  </a>
+      </a>
     <button id="nav-input" onclick="showPage('input')">🎟️ 抽獎券</button>
     <button id="nav-dash" onclick="showPage('dash')">🔥 核銷看板</button>
     <button id="nav-stats" onclick="showPage('stats')" style="display:none;">📊 核銷統計</button>
