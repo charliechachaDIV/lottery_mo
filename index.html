@@ -456,18 +456,17 @@ function showPage(pageName) {
   document.getElementById(`nav-${pageName}`).classList.add('active');
 
   if (pageName === 'dash') {
-    // --- 新增：排序邏輯 ---
-    // 將 apps 陣列根據「是否有未核銷獎券」進行排序
+    const dashGrid = document.getElementById('dashboard-grid'); // 重新定位容器
+    
+    // 1. 進行排序邏輯
     const sortedApps = [...apps].sort((a, b) => {
       const activeA = selection[a].filter(v => !v.used).length > 0 ? 1 : 0;
       const activeB = selection[b].filter(v => !v.used).length > 0 ? 1 : 0;
-      return activeB - activeA; // 有券的 (1) 排在沒券的 (0) 前面
+      return activeB - activeA;
     });
 
-    // 清空舊的看板網格
+    // 2. 清空並重新注入 HTML
     dashGrid.innerHTML = '';
-    
-    // 按照排序後的順序重新生成 HTML
     sortedApps.forEach(app => {
       dashGrid.innerHTML += `
         <div class="dash-item" id="card-${app}">
@@ -476,9 +475,12 @@ function showPage(pageName) {
           <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
           <div class="mini-slots" id="mini-${app}"></div>
         </div>`;
+    });
+
+    // 3. 關鍵：在 HTML 注入完畢後，再跑一遍 render，按鈕才會綁定成功
+    sortedApps.forEach(app => {
       renderDashCard(app);
     });
-    // --- 排序結束 ---
 
     updateGrandTotal();
   }
