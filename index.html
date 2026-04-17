@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>社區消費大獎賞2026 - 助手 - 實時核銷版</title>
+    <title>消費獎賞助手 - 實時核銷版</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
-            --primary: #0077aa;     /* 低調柔和藍綠 */
-            --accent: #00aa99; 
+            --primary: #003087;      /* 日系企業深藍主色 */
+            --accent: #0066cc; 
+            --soft-blue: #e3f0ff; 
             --bg: #f8f9fc; 
-            --danger: #ff4757; 
-            --gray: #636e72; 
+            --danger: #d32f2f; 
+            --gray: #666666; 
+            --light-gray: #f0f0f0; 
         }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; 
             margin: 0; 
-            background: linear-gradient(180deg, #f8f9fc 0%, #e8edf5 100%); 
-            color: #2d3436; 
+            background: #f4f6f9; 
+            color: #1f2937; 
         }
         nav { 
             display: flex; 
-            background: white; 
-            border-bottom: 1px solid #ddd; 
+            background: #ffffff; 
+            border-bottom: 1px solid #d1d5db; 
             position: sticky; 
             top: 0; 
             z-index: 100; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
         }
         nav button { 
             flex: 1; padding: 15px 8px; border: none; background: none; 
@@ -37,62 +39,77 @@
         .container { padding: 12px; max-width: 620px; margin: auto; }
         .page { display: none; }
         .page.active { display: block; }
-        .card { background: white; border-radius: 18px; padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); margin-bottom: 18px; }
+        .card { 
+            background: #ffffff; 
+            border-radius: 12px; 
+            padding: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+            margin-bottom: 18px; 
+            border: 1px solid #e5e7eb;
+        }
         
-        /* 輸入頁 */
-        .app-row { padding: 14px 0; border-bottom: 1px solid #eee; }
+        /* 輸入頁 - 日系專業風 */
+        .app-row { padding: 14px 0; border-bottom: 1px solid #e5e7eb; }
         .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .app-name { font-size: 1.2rem; font-weight: 700; }
+        .app-name { font-size: 1.15rem; font-weight: 700; color: #1f2937; }
         .voucher-slots { display: flex; gap: 10px; margin-bottom: 12px; }
-        .slot { flex: 1; height: 56px; border: 3px dashed #b2bec3; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative; }
-        .slot.filled { border-style: solid; border-color: var(--primary); background: #e6f0ff; color: var(--primary); box-shadow: 0 4px 12px rgba(0,119,170,0.2); }
+        .slot { 
+            flex: 1; height: 56px; border: 2px solid #d1d5db; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.35rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative;
+        }
+        .slot.filled { border-color: var(--primary); background: #e3f0ff; color: var(--primary); }
         .slot.filled::after { content: '×'; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         
-        .chip { padding: 12px 8px; border: 2px solid #dfe6e9; background: white; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; flex: 1; text-align: center; transition: all 0.2s; }
+        .chip { 
+            padding: 12px 8px; border: 1px solid #d1d5db; background: white; 
+            border-radius: 8px; font-size: 1.05rem; font-weight: 600; 
+            cursor: pointer; flex: 1; text-align: center; transition: all 0.2s;
+        }
         .chip:active { transform: scale(0.95); background: var(--primary); color: white; }
         
-        /* 核銷戰場 - 總戰果柔和低調 */
+        /* 核銷戰場 - 本期總戰果（日系柔和藍） */
         .total-summary { 
-            background: linear-gradient(90deg, #0077aa, #00aa99); 
-            color: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: center; 
-            box-shadow: 0 6px 18px rgba(0,119,170,0.25);
+            background: linear-gradient(90deg, #003087, #0066cc); 
+            color: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; 
+            box-shadow: 0 4px 12px rgba(0,48,135,0.2);
         }
-        .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; }
-        .total-amount { font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; }
+        .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; font-weight: 600; }
+        .total-amount { font-size: 2.35rem; font-weight: 800; letter-spacing: -1px; }
         
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .dash-item { background: white; padding: 14px; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
-        .v-amount { font-size: 1.85rem; font-weight: 800; color: #d63031; }
-        .s-amount { font-size: 0.95rem; color: var(--accent); margin-top: 4px; }
+        .dash-item { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+        .v-amount { font-size: 1.8rem; font-weight: 700; color: #d32f2f; }
+        .s-amount { font-size: 0.95rem; color: #0066cc; margin-top: 4px; }
         
-        /* 核銷格子 - 柔和綠色 + 剔勾 */
+        /* 核銷格子 - 按你要求：預設填滿色（深藍），核銷後變淡灰 */
         .mini-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .mini-slot { 
-            flex: 0 0 calc(33.33% - 6px); height: 52px; border: 2px solid #dfe6e9; border-radius: 12px; 
+            flex: 0 0 calc(33.33% - 6px); height: 52px; border: 2px solid #d1d5db; border-radius: 8px; 
             font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; transition: all 0.3s; background: #f1f4f8; color: var(--primary);
-        }
-        .mini-slot:not(.used)::after { 
-            content: '✓'; position: absolute; top: -6px; right: -6px; 
-            background: white; color: var(--primary); width: 24px; height: 24px; 
-            border-radius: 50%; font-size: 16px; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 2px 6px rgba(0,119,170,0.3);
+            cursor: pointer; transition: all 0.3s; background: #003087; color: white;
         }
         .mini-slot.used { 
-            background: #e9ecef; color: var(--gray); border-color: #b2bec3; 
-            text-decoration: line-through 3px; box-shadow: none; 
+            background: var(--light-gray); 
+            color: var(--gray); 
+            border-color: #d1d5db; 
+            text-decoration: line-through 3px; 
         }
         
-        .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 1.15rem; font-weight: 700; margin-top: 8px; box-shadow: 0 6px 18px rgba(0,119,170,0.3); }
-        .status { font-size: 0.85rem; color: #636e72; text-align: center; margin: 20px 0; }
+        .btn-save { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; 
+            margin-top: 8px; box-shadow: 0 4px 12px rgba(0,48,135,0.25); 
+        }
+        .status { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 20px 0; }
 
-        /* 統計頁 */
-        .stats-period { background: white; border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        .stats-period-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 1.15rem; }
-        .app-row-stats { display: flex; align-items: center; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+        /* 統計頁 - 日系表格風格 */
+        .stats-period { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+        .stats-period-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 1.15rem; color: #1f2937; }
+        .app-row-stats { display: flex; align-items: center; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
         .app-name-stats { width: 110px; font-weight: 600; font-size: 1rem; }
         .denom-list { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
-        .denom-item { background: #e6f0ff; padding: 4px 10px; border-radius: 9999px; font-size: 0.85rem; white-space: nowrap; }
+        .denom-item { background: #e3f0ff; padding: 4px 10px; border-radius: 9999px; font-size: 0.85rem; white-space: nowrap; color: #003087; }
     </style>
 </head>
 <body>
@@ -104,18 +121,18 @@
     <div class="container">
         <div id="page-input" class="page">
             <div class="card">
-                <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.3rem;">
-                    🚀 本期戰績登記 
-                    <small id="today-hint" style="color:var(--accent); font-size:0.9rem; font-weight:600;"></small>
+                <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.25rem; color:#1f2937;">
+                    本期戰績登記 
+                    <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
                 </h2>
                 <div id="input-list"></div>
-                <button class="btn-save" onclick="saveData()">💾 儲存這期戰果</button>
+                <button class="btn-save" onclick="saveData()">儲存這期戰果</button>
             </div>
         </div>
 
         <div id="page-dash" class="page">
             <div class="card">
-                <h2 style="margin-top:0; font-size:1.3rem;">🔥 即時核銷戰場（點格子就扣除啦！）</h2>
+                <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">即時核銷戰場（點格子就扣除）</h2>
                 <div class="total-summary">
                     <h3>本期總戰果</h3>
                     <div class="total-amount" id="grand-total">$0</div>
@@ -127,7 +144,7 @@
 
         <div id="page-stats" class="page">
             <div class="card">
-                <h2 style="margin-top:0; font-size:1.3rem;">📊 歷史戰績統計</h2>
+                <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">歷史戰績統計</h2>
                 <div id="stats-container" style="min-height: 300px;"></div>
             </div>
         </div>
@@ -158,11 +175,11 @@
 
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
-            toast.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:14px 26px;border-radius:9999px;color:#fff;font-weight:700;z-index:99999;box-shadow:0 8px 25px rgba(0,0,0,0.3);`;
-            toast.style.backgroundColor = type === 'success' ? '#00aa99' : '#ff4757';
+            toast.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:#fff;font-weight:600;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.25);`;
+            toast.style.backgroundColor = type === 'success' ? '#0066cc' : '#d32f2f';
             toast.textContent = msg;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2600);
+            setTimeout(() => toast.remove(), 1600);   /* 時間縮短 */
         }
 
         function getMacauPeriodTag() {
@@ -236,12 +253,12 @@
 
             if (error) {
                 item.used = oldUsed;
-                showToast('⚠️ 核銷失敗，請稍後再試', 'error');
+                showToast('核銷失敗，請稍後再試', 'error');
                 return;
             }
             renderDashCard(app);
             updateGrandTotal();
-            showToast(item.used ? '✅ 已核銷！' : '🔄 已取消');
+            showToast(item.used ? '已核銷' : '已取消核銷');
         }
 
         function updateGrandTotal() {
@@ -267,7 +284,6 @@
             if (pageName === 'stats') loadStats();
         }
 
-        // ==================== 修復重點：強制只載入3張 ====================
         async function loadData() {
             const period = getMacauPeriodTag();
             const { data } = await _supabase.from('lottery_records').select('*').eq('user_token', myToken).eq('period_tag', period);
@@ -280,12 +296,12 @@
 
             apps.forEach(app => {
                 let list = temp[app] || [];
-                list = list.sort((a,b) => a.slot_index - b.slot_index).slice(0, 3);   // ← 強制最多3張
+                list = list.sort((a,b) => a.slot_index - b.slot_index).slice(0, 3);
                 selection[app] = list.map(({val, used}) => ({val, used}));
                 renderInputSlots(app);
             });
 
-            document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong> <span style="color:var(--accent)">✓</span>`;
+            document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong>`;
             document.getElementById('user-info').innerText = `期數：${period} | ID: ${myToken}`;
         }
 
@@ -301,14 +317,13 @@
                 });
             });
             if (records.length > 0) await _supabase.from('lottery_records').insert(records);
-            showToast('✅ 儲存成功！');
-            btn.innerText = "💾 儲存這期戰果"; btn.disabled = false;
+            showToast('儲存成功');
+            btn.innerText = "儲存這期戰果"; btn.disabled = false;
             showPage('dash');
         }
 
-        // 統計頁面（保持不變）
         async function loadStats() {
-            statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#999;">📡 正在拉取歷史戰績...</div>';
+            statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績...</div>';
             const { data } = await _supabase.from('weekly_report').select('*').order('period_tag', { ascending: false });
             const periods = {};
             (data || []).forEach(row => {
@@ -321,7 +336,7 @@
             const currentPeriod = getMacauPeriodTag();
             Object.keys(periods).sort((a,b) => b.localeCompare(a)).forEach(tag => {
                 const isCurrent = tag === currentPeriod;
-                html += `<div class="stats-period"><div class="stats-period-header"><span>${tag} ${isCurrent ? '⭐ 本期' : ''}</span></div>`;
+                html += `<div class="stats-period"><div class="stats-period-header"><span>${tag} ${isCurrent ? '（本期）' : ''}</span></div>`;
                 apps.forEach(app => {
                     const appData = periods[tag][app] || {};
                     let denomHTML = '';
@@ -334,12 +349,12 @@
                         }
                     });
                     if (denomHTML || subtotal > 0) {
-                        html += `<div class="app-row-stats"><div class="app-name-stats">${app}</div><div class="denom-list">${denomHTML || '<span style="color:#999;">無券</span>'}</div><div style="font-weight:700;color:var(--primary);">$${subtotal}</div></div>`;
+                        html += `<div class="app-row-stats"><div class="app-name-stats">${app}</div><div class="denom-list">${denomHTML || '<span style="color:#9ca3af;">無券</span>'}</div><div style="font-weight:700;color:var(--primary);">$${subtotal}</div></div>`;
                     }
                 });
                 html += `</div>`;
             });
-            statsContainer.innerHTML = html || `<p style="text-align:center;color:#999;padding:60px;">還沒有任何期數紀錄，快去填獎券吧！🎟️</p>`;
+            statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何期數紀錄</p>`;
         }
 
         if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
