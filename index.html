@@ -3,41 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>消費獎賞助手 - 全同步版</title>
+    <title>消費獎賞助手 - 實時核銷版</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #007bff; --bg: #f4f7f9; --danger: #d9534f; --success: #28a745; --gray: #adb5bd; }
-        body { font-family: -apple-system, sans-serif; margin: 0; background-color: var(--bg); color: #333; }
-        nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
-        nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 1rem; cursor: pointer; color: #666; }
-        nav button.active { color: var(--primary); font-weight: bold; border-bottom: 3px solid var(--primary); }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
+        :root { 
+            --primary: #00b894; 
+            --bg: #f4f7f9; 
+            --danger: #ff7675; 
+            --success: #00b894; 
+            --gray: #636e72; 
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background: linear-gradient(180deg, #f4f7f9 0%, #e8f0f5 100%); color: #2d3436; }
+        nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        nav button { flex: 1; padding: 16px; border: none; background: none; font-size: 1.05rem; font-weight: 600; cursor: pointer; }
+        nav button.active { color: var(--primary); border-bottom: 4px solid var(--primary); }
+        
+        .container { padding: 16px; max-width: 620px; margin: auto; }
         .page { display: none; }
         .page.active { display: block; }
-        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 24px; }
         
-        /* 基礎樣式 */
-        .app-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .app-name { font-weight: bold; font-size: 1.1rem; }
-        .voucher-slots { display: flex; gap: 8px; margin-bottom: 10px; }
+        /* 輸入頁 */
+        .app-row { padding: 18px 0; border-bottom: 1px solid #eee; }
+        .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .app-name { font-size: 1.15rem; font-weight: 700; }
+        .voucher-slots { display: flex; gap: 12px; margin-bottom: 14px; }
+        .slot { flex: 1; height: 58px; border: 3px dashed #b2bec3; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative; }
+        .slot.filled { border-style: solid; border-color: var(--primary); background: #e3f8f2; color: var(--primary); box-shadow: 0 4px 12px rgba(0,184,148,0.2); }
+        .slot.filled::after { content: '×'; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         
-        /* 格子樣式 - 統一輸入與看板 */
-        .slot { flex: 1; height: 45px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; cursor: pointer; background: #fff; }
-        .slot.filled { border-style: solid; border-color: var(--primary); color: var(--primary); background: #e7f1ff; }
-        .slot.used { background: #e9ecef; color: var(--gray); text-decoration: line-through; border-color: var(--gray); }
-        .slot.filled::after { content: '×'; position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-
-        .btn-group { display: flex; gap: 5px; }
-        .chip { padding: 10px 5px; border: 1px solid #ddd; background: white; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; text-align: center; }
-
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; }
-        .v-amount { color: var(--danger); font-size: 1.2rem; font-weight: bold; display: block; }
-        .s-amount { color: var(--success); font-size: 0.85rem; }
-
-        .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; font-weight: bold; }
-        .status { font-size: 0.7rem; color: #aaa; text-align: center; margin: 20px 0; }
+        .chip { padding: 12px 8px; border: 2px solid #dfe6e9; background: white; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; flex: 1; text-align: center; transition: all 0.2s; }
+        .chip:active { transform: scale(0.95); background: var(--primary); color: white; border-color: var(--primary); }
+        
+        /* 看板頁 */
+        .total-summary { background: linear-gradient(90deg, #00b894, #00cec9); color: white; border-radius: 16px; padding: 18px; margin-bottom: 20px; text-align: center; }
+        .total-summary h3 { margin: 0 0 8px; font-size: 1.1rem; opacity: 0.9; }
+        .total-amount { font-size: 2.2rem; font-weight: 800; }
+        
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .dash-item { background: white; padding: 16px; border-radius: 18px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); transition: 0.3s; }
+        .v-amount { font-size: 1.8rem; font-weight: 800; color: #d63031; }
+        .s-amount { font-size: 0.95rem; color: #00b894; margin-top: 4px; }
+        
+        .mini-slots { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .mini-slot { 
+            flex: 0 0 calc(33.33% - 8px); height: 52px; border: 2px solid #dfe6e9; border-radius: 12px; 
+            font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; 
+            position: relative; cursor: pointer; transition: all 0.3s; background: #f8f9fa;
+        }
+        .mini-slot.used { 
+            background: linear-gradient(135deg, #00b894, #00cec9); 
+            color: white; 
+            border-color: #00b894; 
+            box-shadow: 0 4px 12px rgba(0,184,148,0.4);
+        }
+        .mini-slot.used::after { 
+            content: '✓'; 
+            position: absolute; 
+            top: -6px; right: -6px; 
+            background: white; color: #00b894; 
+            width: 24px; height: 24px; 
+            border-radius: 50%; font-size: 16px; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; margin-top: 10px; box-shadow: 0 6px 20px rgba(0,184,148,0.3); }
+        .status { font-size: 0.85rem; color: #636e72; text-align: center; margin: 24px 0; }
     </style>
 </head>
 <body>
@@ -177,7 +209,14 @@
         renderDashCard(app);
         showToast(item.used ? '✅ 已核銷' : '🔄 已取消核銷');
     }
-
+   function showToast(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:16px 28px;border-radius:9999px;color:#fff;font-weight:700;z-index:99999;box-shadow:0 10px 30px rgba(0,0,0,0.25);`;
+            toast.style.backgroundColor = type === 'success' ? '#00b894' : '#ff7675';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2600);
+        }
     function showPage(pageName) { /* 與之前相同 */ 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -267,9 +306,10 @@
     }
 
     // 啟動
-    const day = new Date().getDay();
-    if ([0, 5, 6].includes(day)) showPage('input'); else showPage('dash');
-    loadData();
+
+        const day = new Date().getDay();
+        if ([0, 5, 6].includes(day)) showPage('input'); else showPage('dash');
+        loadData();
 </script>
 </body>
 </html>
