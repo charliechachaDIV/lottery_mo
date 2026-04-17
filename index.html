@@ -43,8 +43,7 @@
     <p class="status">* 資料會自動儲存在雲端，換瀏覽器資料將不互通。</p>
 
 <script>
-        // --- 1. 連線資訊修正 ---
-        // 注意：網址必須完整，且變數名稱改為 _supabase 避免衝突
+        // --- 1. 連線資訊 ---
         const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -57,10 +56,19 @@
         }
         document.getElementById('user-info').innerText = '您的匿名 ID: ' + myToken;
 
-        // 定義支付工具列表
-        const tools = ['ICBC', 'BOC', 'MPAY', 'LUSO', 'TAI_FUNG'];
+        // --- 3. 更新後的支付工具列表 (對應圖片) ---
+        const tools = [
+            '澳門中銀', 
+            '工銀e支付', 
+            '豐付寶', 
+            'LusoPay', 
+            'MPay', 
+            '支付寶(澳門)', 
+            'UePay', 
+            '廣發支付'
+        ];
 
-        // --- 3. 初始化表格 ---
+        // --- 4. 初始化表格 ---
         const tbody = document.getElementById('record-table');
         tools.forEach(tool => {
             const row = document.createElement('tr');
@@ -72,7 +80,7 @@
             tbody.appendChild(row);
         });
 
-        // --- 4. 從資料庫讀取舊紀錄 ---
+        // --- 5. 從資料庫讀取舊紀錄 ---
         async function loadData() {
             try {
                 const { data, error } = await _supabase
@@ -94,7 +102,7 @@
             }
         }
 
-        // --- 5. 計算總計 ---
+        // --- 6. 計算總計 ---
         function calculateTotal() {
             let totalPaid = 0;
             let totalReward = 0;
@@ -105,7 +113,7 @@
             document.getElementById('total-reward').innerText = totalReward.toFixed(2);
         }
 
-        // --- 6. 儲存全部資料 ---
+        // --- 7. 儲存全部資料 ---
         async function saveAll() {
             const records = [];
             tools.forEach(tool => {
@@ -120,7 +128,6 @@
                 });
             });
 
-            // 使用修正後的 _supabase 變數
             await _supabase.from('lottery_records').delete().eq('user_token', myToken);
             const { error } = await _supabase.from('lottery_records').insert(records);
 
@@ -128,7 +135,6 @@
             else alert('資料已同步至雲端！');
         }
 
-        // 頁面開啟時自動載入
         loadData();
     </script>
 </body>
