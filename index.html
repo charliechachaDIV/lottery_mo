@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>消費獎賞助手 - 實時核銷版</title>
+  <title>社區消費大獎賞2026 助手 - 實時核銷版</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -237,28 +237,28 @@
 </head>
 <body>
   <nav id="main-nav">
-    <button id="nav-input" onclick="showPage('input')">🎟️ 填獎券</button>
-    <button id="nav-dash" onclick="showPage('dash')">🔥 核銷戰場</button>
-    <button id="nav-stats" onclick="showPage('stats')" style="display:none;">📊 戰績統計</button>
+    <button id="nav-input" onclick="showPage('input')">🎟️ 抽獎券</button>
+    <button id="nav-dash" onclick="showPage('dash')">🔥 核銷看板</button>
+    <button id="nav-stats" onclick="showPage('stats')" style="display:none;">📊 核銷統計</button>
   </nav>
 
   <div class="container">
     <div id="page-input" class="page">
       <div class="card">
         <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.25rem; color:#1f2937;">
-          本期戰績登記 
+          本期獎券登記 
           <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
         </h2>
         <div id="input-list"></div>
-        <button class="btn-save" onclick="saveData()">儲存這期戰果</button>
+        <button class="btn-save" onclick="saveData()">儲存這期獎券</button>
       </div>
     </div>
 
     <div id="page-dash" class="page">
       <div class="card">
-        <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">即時核銷戰場（點格子就扣除）</h2>
+        <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">即時核銷看板（點擊格子扣除）</h2>
         <div class="total-summary">
-          <h3>本期總戰果</h3>
+          <h3>本期總獎券</h3>
           <div class="total-amount" id="grand-total">$0</div>
           <div style="font-size:0.95rem; opacity:0.9;">需消費 <span id="grand-spend">$0</span></div>
         </div>
@@ -268,7 +268,7 @@
 
     <div id="page-stats" class="page">
       <div class="card">
-        <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">歷史戰績統計</h2>
+        <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">歷史獎券統計</h2>
         <div id="stats-container" style="min-height: 300px;"></div>
       </div>
     </div>
@@ -506,7 +506,7 @@
 
     // 【已修正統計部分】只讀取 is_discarded = false 的資料
     async function loadStats() {
-      statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績（已排除廢棄資料）...</div>';
+      statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史獎券（已排除廢棄資料）...</div>';
 
       const { data } = await _supabase
         .from('lottery_records')
