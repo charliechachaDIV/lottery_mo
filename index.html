@@ -111,19 +111,6 @@
             document.getElementById(`nav-${pageName}`).classList.add('active');
         }
 
-        // --- 自動判定日期 ---
-        function initDefaultPage() {
-            const day = new Date().getDay(); // 0是週日, 1-6是週一至六
-            const isWeekend = [0, 5, 6].includes(day);
-            
-            const hint = document.getElementById('today-hint');
-            if (isWeekend) {
-                hint.innerText = "(週末輸入模式)";
-                showPage('input');
-            } else {
-                showPage('dash');
-            }
-        }
 
         // --- 資料同步 ---
         async function loadData() {
@@ -158,10 +145,6 @@
             }
         }
 
-        initDefaultPage();
-        loadData();
-    </script>
-    
     // --- 自動判定日期 ---
 function initDefaultPage() {
     const now = new Date();
@@ -181,5 +164,12 @@ function initDefaultPage() {
         showPage('dash');
     }
 }
+
+        
+        initDefaultPage();
+        loadData();
+    </script>
+    
+
 </body>
 </html>
