@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
-            --primary: #00b894;     /* 回復你最愛的綠色 */
-            --accent: #00cec9; 
+            --primary: #0077aa;     /* 低調柔和藍綠 */
+            --accent: #00aa99; 
             --bg: #f8f9fc; 
             --danger: #ff4757; 
             --gray: #636e72; 
@@ -45,17 +45,17 @@
         .app-name { font-size: 1.2rem; font-weight: 700; }
         .voucher-slots { display: flex; gap: 10px; margin-bottom: 12px; }
         .slot { flex: 1; height: 56px; border: 3px dashed #b2bec3; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative; }
-        .slot.filled { border-style: solid; border-color: var(--primary); background: #e6f0ff; color: var(--primary); box-shadow: 0 4px 12px rgba(0,184,148,0.25); }
+        .slot.filled { border-style: solid; border-color: var(--primary); background: #e6f0ff; color: var(--primary); box-shadow: 0 4px 12px rgba(0,119,170,0.2); }
         .slot.filled::after { content: '×'; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         
         .chip { padding: 12px 8px; border: 2px solid #dfe6e9; background: white; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; flex: 1; text-align: center; transition: all 0.2s; }
         .chip:active { transform: scale(0.95); background: var(--primary); color: white; }
         
-        /* 核銷戰場 - 總戰果柔和一點 */
+        /* 核銷戰場 - 總戰果柔和低調 */
         .total-summary { 
-            background: linear-gradient(90deg, #00b894, #00cec9); 
+            background: linear-gradient(90deg, #0077aa, #00aa99); 
             color: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: center; 
-            box-shadow: 0 6px 18px rgba(0,184,148,0.25);
+            box-shadow: 0 6px 18px rgba(0,119,170,0.25);
         }
         .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; }
         .total-amount { font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; }
@@ -65,7 +65,7 @@
         .v-amount { font-size: 1.85rem; font-weight: 800; color: #d63031; }
         .s-amount { font-size: 0.95rem; color: var(--accent); margin-top: 4px; }
         
-        /* 核銷格子 - 回復你最愛的綠色+剔勾，未核銷綠色，已核銷變灰 */
+        /* 核銷格子 - 柔和綠色 + 剔勾 */
         .mini-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .mini-slot { 
             flex: 0 0 calc(33.33% - 6px); height: 52px; border: 2px solid #dfe6e9; border-radius: 12px; 
@@ -76,17 +76,17 @@
             content: '✓'; position: absolute; top: -6px; right: -6px; 
             background: white; color: var(--primary); width: 24px; height: 24px; 
             border-radius: 50%; font-size: 16px; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 2px 6px rgba(0,184,148,0.3);
+            box-shadow: 0 2px 6px rgba(0,119,170,0.3);
         }
         .mini-slot.used { 
             background: #e9ecef; color: var(--gray); border-color: #b2bec3; 
             text-decoration: line-through 3px; box-shadow: none; 
         }
         
-        .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 1.15rem; font-weight: 700; margin-top: 8px; box-shadow: 0 6px 18px rgba(0,184,148,0.3); }
+        .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 1.15rem; font-weight: 700; margin-top: 8px; box-shadow: 0 6px 18px rgba(0,119,170,0.3); }
         .status { font-size: 0.85rem; color: #636e72; text-align: center; margin: 20px 0; }
 
-        /* 統計頁面 - 全新布局：每個APP、每券多少張、總金額 */
+        /* 統計頁 */
         .stats-period { background: white; border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
         .stats-period-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 1.15rem; }
         .app-row-stats { display: flex; align-items: center; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
@@ -99,11 +99,9 @@
     <nav id="main-nav">
         <button id="nav-input" onclick="showPage('input')">🎟️ 填獎券</button>
         <button id="nav-dash" onclick="showPage('dash')">🔥 核銷戰場</button>
-        <!-- 統計按鈕只在 DEV 模式顯示 -->
         <button id="nav-stats" onclick="showPage('stats')" style="display:none;">📊 戰績統計</button>
     </nav>
     <div class="container">
-        <!-- 輸入頁 -->
         <div id="page-input" class="page">
             <div class="card">
                 <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.3rem;">
@@ -115,7 +113,6 @@
             </div>
         </div>
 
-        <!-- 核銷看板 -->
         <div id="page-dash" class="page">
             <div class="card">
                 <h2 style="margin-top:0; font-size:1.3rem;">🔥 即時核銷戰場（點格子就扣除啦！）</h2>
@@ -128,7 +125,6 @@
             </div>
         </div>
 
-        <!-- 統計頁面 -->
         <div id="page-stats" class="page">
             <div class="card">
                 <h2 style="margin-top:0; font-size:1.3rem;">📊 歷史戰績統計</h2>
@@ -155,23 +151,20 @@
         const dashGrid = document.getElementById('dashboard-grid');
         const statsContainer = document.getElementById('stats-container');
 
-        // ==================== DEV 模式檢查（只有你輸入 ?DEV=charliechacha623105 才顯示統計） ====================
         function isDevMode() {
             const params = new URLSearchParams(window.location.search);
             return params.get('DEV') === 'charliechacha623105';
         }
 
-        // ==================== Toast ====================
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
             toast.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:14px 26px;border-radius:9999px;color:#fff;font-weight:700;z-index:99999;box-shadow:0 8px 25px rgba(0,0,0,0.3);`;
-            toast.style.backgroundColor = type === 'success' ? '#00b894' : '#ff4757';
+            toast.style.backgroundColor = type === 'success' ? '#00aa99' : '#ff4757';
             toast.textContent = msg;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 2600);
         }
 
-        // ==================== 澳門期數 ====================
         function getMacauPeriodTag() {
             const now = new Date();
             const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -183,7 +176,7 @@
             return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
         }
 
-        // ==================== 初始化 ====================
+        // 初始化
         apps.forEach(app => {
             selection[app] = [];
             inputList.innerHTML += `<div class="app-row"><div class="app-info"><span class="app-name">${app}</span><span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span></div><div class="voucher-slots" id="slots-${app}"></div><div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div></div>`;
@@ -212,7 +205,6 @@
             }
         }
 
-        // ==================== 核銷看板 ====================
         function renderDashCard(app) {
             const container = document.getElementById(`mini-${app}`);
             container.innerHTML = '';
@@ -275,19 +267,24 @@
             if (pageName === 'stats') loadStats();
         }
 
-        // ==================== 資料存取 ====================
+        // ==================== 修復重點：強制只載入3張 ====================
         async function loadData() {
             const period = getMacauPeriodTag();
             const { data } = await _supabase.from('lottery_records').select('*').eq('user_token', myToken).eq('period_tag', period);
+            
             const temp = {};
             (data || []).forEach(item => {
                 if (!temp[item.payment_tool]) temp[item.payment_tool] = [];
                 temp[item.payment_tool].push({ val: item.reward, used: item.amount_paid === 1, slot_index: item.slot_index });
             });
+
             apps.forEach(app => {
-                selection[app] = temp[app] ? temp[app].sort((a,b) => a.slot_index - b.slot_index).map(({val,used}) => ({val,used})) : [];
+                let list = temp[app] || [];
+                list = list.sort((a,b) => a.slot_index - b.slot_index).slice(0, 3);   // ← 強制最多3張
+                selection[app] = list.map(({val, used}) => ({val, used}));
                 renderInputSlots(app);
             });
+
             document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong> <span style="color:var(--accent)">✓</span>`;
             document.getElementById('user-info').innerText = `期數：${period} | ID: ${myToken}`;
         }
@@ -309,17 +306,12 @@
             showPage('dash');
         }
 
-        // ==================== 統計頁面（自動運作，無需手動製作） ====================
+        // 統計頁面（保持不變）
         async function loadStats() {
             statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#999;">📡 正在拉取歷史戰績...</div>';
-            const { data, error } = await _supabase.from('weekly_report').select('*').order('period_tag', { ascending: false });
-            if (error || !data) {
-                statsContainer.innerHTML = `<p style="color:#ff4757;text-align:center;">⚠️ 統計載入失敗</p>`;
-                return;
-            }
-
+            const { data } = await _supabase.from('weekly_report').select('*').order('period_tag', { ascending: false });
             const periods = {};
-            data.forEach(row => {
+            (data || []).forEach(row => {
                 if (!periods[row.period_tag]) periods[row.period_tag] = {};
                 if (!periods[row.period_tag][row.payment_tool]) periods[row.period_tag][row.payment_tool] = {};
                 periods[row.period_tag][row.payment_tool][row.reward] = row.voucher_count;
@@ -329,10 +321,7 @@
             const currentPeriod = getMacauPeriodTag();
             Object.keys(periods).sort((a,b) => b.localeCompare(a)).forEach(tag => {
                 const isCurrent = tag === currentPeriod;
-                html += `<div class="stats-period">
-                    <div class="stats-period-header">
-                        <span>${tag} ${isCurrent ? '⭐ 本期' : ''}</span>
-                    </div>`;
+                html += `<div class="stats-period"><div class="stats-period-header"><span>${tag} ${isCurrent ? '⭐ 本期' : ''}</span></div>`;
                 apps.forEach(app => {
                     const appData = periods[tag][app] || {};
                     let denomHTML = '';
@@ -345,24 +334,15 @@
                         }
                     });
                     if (denomHTML || subtotal > 0) {
-                        html += `<div class="app-row-stats">
-                            <div class="app-name-stats">${app}</div>
-                            <div class="denom-list">${denomHTML || '<span style="color:#999;">無券</span>'}</div>
-                            <div style="font-weight:700;color:var(--primary);white-space:nowrap;">$${subtotal}</div>
-                        </div>`;
+                        html += `<div class="app-row-stats"><div class="app-name-stats">${app}</div><div class="denom-list">${denomHTML || '<span style="color:#999;">無券</span>'}</div><div style="font-weight:700;color:var(--primary);">$${subtotal}</div></div>`;
                     }
                 });
                 html += `</div>`;
             });
-
-            if (!html) html = `<p style="text-align:center;color:#999;padding:60px;">還沒有任何期數紀錄，快去填獎券吧！🎟️</p>`;
-            statsContainer.innerHTML = html;
+            statsContainer.innerHTML = html || `<p style="text-align:center;color:#999;padding:60px;">還沒有任何期數紀錄，快去填獎券吧！🎟️</p>`;
         }
 
-        // ==================== 啟動 + DEV 模式 ====================
-        if (isDevMode()) {
-            document.getElementById('nav-stats').style.display = 'flex';
-        }
+        if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
         const day = new Date().getDay();
         if ([0, 5, 6].includes(day)) showPage('input'); else showPage('dash');
         loadData();
