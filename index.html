@@ -449,17 +449,41 @@ nav {
       document.getElementById('grand-spend').innerText = `$${(grandSpend * 3).toFixed(0)}`;
     }
 
-    function showPage(pageName) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      document.getElementById(`page-${pageName}`).classList.add('active');
-      document.getElementById(`nav-${pageName}`).classList.add('active');
-      if (pageName === 'dash') {
-        apps.forEach(app => renderDashCard(app));
-        updateGrandTotal();
-      }
-      if (pageName === 'stats') loadStats();
-    }
+function showPage(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${pageName}`).classList.add('active');
+  document.getElementById(`nav-${pageName}`).classList.add('active');
+
+  if (pageName === 'dash') {
+    // --- 新增：排序邏輯 ---
+    // 將 apps 陣列根據「是否有未核銷獎券」進行排序
+    const sortedApps = [...apps].sort((a, b) => {
+      const activeA = selection[a].filter(v => !v.used).length > 0 ? 1 : 0;
+      const activeB = selection[b].filter(v => !v.used).length > 0 ? 1 : 0;
+      return activeB - activeA; // 有券的 (1) 排在沒券的 (0) 前面
+    });
+
+    // 清空舊的看板網格
+    dashGrid.innerHTML = '';
+    
+    // 按照排序後的順序重新生成 HTML
+    sortedApps.forEach(app => {
+      dashGrid.innerHTML += `
+        <div class="dash-item" id="card-${app}">
+          <div class="app-name" style="font-size:0.95rem">${app}</div>
+          <span class="v-amount" id="v-${app}">$0</span>
+          <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
+          <div class="mini-slots" id="mini-${app}"></div>
+        </div>`;
+      renderDashCard(app);
+    });
+    // --- 排序結束 ---
+
+    updateGrandTotal();
+  }
+  if (pageName === 'stats') loadStats();
+}
 
     async function loadData() {
       const period = getMacauPeriodTag();
