@@ -18,43 +18,188 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft YaHei", sans-serif;
-      margin: 0; background: #f4f6f9; color: #1f2937;
+      margin: 0;
+      background: #f4f6f9;
+      color: #1f2937;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
     }
-    /* 其他樣式保持不變（與上一版相同） */
-    nav { display: flex; background: #ffffff; border-bottom: 1px solid #d1d5db; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    nav button { flex: 1; padding: 15px 8px; border: none; background: none; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    nav button.active { color: var(--primary); border-bottom: 4px solid var(--primary); }
+    nav {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 1px solid #d1d5db;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    nav button {
+      flex: 1;
+      padding: 15px 8px;
+      border: none;
+      background: none;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    nav button.active {
+      color: var(--primary);
+      border-bottom: 4px solid var(--primary);
+    }
     .container { padding: 12px; max-width: 620px; margin: auto; }
     .page { display: none; }
     .page.active { display: block; }
-    .card { background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e5e7eb; }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      margin-bottom: 18px;
+      border: 1px solid #e5e7eb;
+    }
+
     .app-row { padding: 14px 0; border-bottom: 1px solid #e5e7eb; }
     .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .app-name { font-size: 1.15rem; font-weight: 700; color: #1f2937; }
     .voucher-slots { display: flex; gap: 10px; margin-bottom: 12px; }
-    .slot { flex: 1; height: 56px; border: 2px solid #d1d5db; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-    .slot.filled { border-color: var(--primary); background: #e3f0ff; color: var(--primary); }
-    .slot.filled::after { content: '×'; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-    .chip { padding: 12px 8px; border: 1px solid #d1d5db; background: white; border-radius: 8px; font-size: 1.05rem; font-weight: 600; cursor: pointer; flex: 1; text-align: center; transition: all 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
-    .chip:active { transform: scale(0.95); background: var(--primary); color: white; }
-    .total-summary { background: var(--primary); color: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 8px 20px rgba(0,48,135,0.25); }
+    .slot {
+      flex: 1;
+      height: 56px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: #fff;
+      transition: all 0.3s;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    .slot.filled {
+      border-color: var(--primary);
+      background: #e3f0ff;
+      color: var(--primary);
+    }
+    .slot.filled::after {
+      content: '×';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--danger);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chip {
+      padding: 12px 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.2s;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    .chip:active {
+      transform: scale(0.95);
+      background: var(--primary);
+      color: white;
+    }
+
+    /* 本期總戰果（純色，顯示全部總和） */
+    .total-summary {
+      background: var(--primary);
+      color: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,48,135,0.25);
+    }
+    .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; font-weight: 600; }
     .total-amount { font-size: 2.35rem; font-weight: 800; letter-spacing: -1px; }
+
     .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .dash-item { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04); border: 1px solid #e5e7eb; }
+    .dash-item {
+      background: white;
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      border: 1px solid #e5e7eb;
+    }
+    .v-amount { font-size: 1.8rem; font-weight: 700; color: #d32f2f; }
+    .s-amount { font-size: 0.95rem; color: #0066cc; margin-top: 4px; }
+
+    /* 核銷格子 - 立體感加強 + 未核銷顯示綠色剔號 */
     .mini-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .mini-slot {
-      flex: 0 0 calc(33.33% - 6px); height: 52px; border: 2px solid #d1d5db; border-radius: 8px;
-      font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all 0.3s; background: #003087; color: white; position: relative;
+      flex: 0 0 calc(33.33% - 6px);
+      height: 52px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #003087;
+      color: white;
+      position: relative;
       box-shadow: 0 6px 14px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08), inset 0 -3px 6px rgba(255,255,255,0.15);
     }
-    .mini-slot.used { background: var(--light-gray); color: var(--gray); border-color: #d1d5db; text-decoration: line-through 3px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); }
-    .mini-slot:not(.used)::after { content: '✓'; position: absolute; top: -6px; right: -6px; background: var(--success); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 13px; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .btn-save, .btn-clear { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; margin-top: 8px; box-shadow: 0 8px 20px rgba(0,48,135,0.25); }
-    .btn-clear { background: var(--danger); margin-top: 12px; }
+    .mini-slot.used {
+      background: var(--light-gray);
+      color: var(--gray);
+      border-color: #d1d5db;
+      text-decoration: line-through 3px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    }
+    .mini-slot:not(.used)::after {
+      content: '✓';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--success);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-save, .btn-clear {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 8px;
+      box-shadow: 0 8px 20px rgba(0,48,135,0.25);
+    }
+    .btn-save { background: var(--primary); color: white; }
+    .btn-clear { background: var(--danger); color: white; margin-top: 12px; }
+
     .status { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 20px 0; }
   </style>
 </head>
@@ -69,7 +214,8 @@
     <div id="page-input" class="page">
       <div class="card">
         <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.25rem; color:#1f2937;">
-          本期戰績登記 <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
+          本期戰績登記 
+          <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
         </h2>
         <div id="input-list"></div>
         <button class="btn-save" onclick="saveData()">儲存這期戰果</button>
@@ -77,8 +223,18 @@
       </div>
     </div>
 
-    <!-- dash 和 stats 頁面保持不變 -->
-    <div id="page-dash" class="page"> ...（與上一版相同）... </div>
+    <div id="page-dash" class="page">
+      <div class="card">
+        <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">即時核銷戰場（點格子就扣除）</h2>
+        <div class="total-summary">
+          <h3>本期總戰果</h3>
+          <div class="total-amount" id="grand-total">$0</div>
+          <div style="font-size:0.95rem; opacity:0.9;">需消費 <span id="grand-spend">$0</span></div>
+        </div>
+        <div class="dashboard" id="dashboard-grid"></div>
+      </div>
+    </div>
+
     <div id="page-stats" class="page">
       <div class="card">
         <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">歷史戰績統計</h2>
@@ -90,36 +246,247 @@
   </div>
 
   <script>
-    // ...（SUPABASE_URL、SUPABASE_KEY、apps、denominations、selection、myToken 等保持不變）
-
     const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ...（其他變數與初始化函數 renderInputSlots、addVoucher、renderDashCard、toggleUsed、updateGrandTotal、showPage 保持與上一版完全相同）
+    const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
+    const denominations = [10, 20, 50, 100, 200];
 
-    // ==================== 重點修改：loadStats 現在排除廢棄資料 ====================
-    async function loadStats() {
-      statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績（已排除廢棄資料）...</div>';
+    let selection = {};
+    let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('lottery_token', myToken);
 
-      const { data, error } = await _supabase
-        .from('lottery_records')
-        .select('period_tag, payment_tool, reward, amount_paid')
-        .eq('is_discarded', false)
-        .order('period_tag', { ascending: false });
+    const inputList = document.getElementById('input-list');
+    const dashGrid = document.getElementById('dashboard-grid');
+    const statsContainer = document.getElementById('stats-container');
+
+    function isDevMode() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('DEV') === 'charliechacha623105';
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:#fff;font-weight:600;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.25);`;
+      toast.style.backgroundColor = type === 'success' ? '#0066cc' : '#d32f2f';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 1600);
+    }
+
+    function getMacauPeriodTag() {
+      const now = new Date();
+      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+      const macauTime = new Date(utcTime + 8 * 3600000);
+      macauTime.setHours(0, 0, 0, 0);
+      const day = macauTime.getDay();
+      const daysToSubtract = (day - 5 + 7) % 7;
+      macauTime.setDate(macauTime.getDate() - daysToSubtract);
+      return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
+    }
+
+    // 初始化
+    apps.forEach(app => {
+      selection[app] = [];
+      inputList.innerHTML += `
+        <div class="app-row">
+          <div class="app-info">
+            <span class="app-name">${app}</span>
+            <span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span>
+          </div>
+          <div class="voucher-slots" id="slots-${app}"></div>
+          <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div>
+        </div>`;
+      dashGrid.innerHTML += `
+        <div class="dash-item" id="card-${app}">
+          <div class="app-name" style="font-size:0.95rem">${app}</div>
+          <span class="v-amount" id="v-${app}">$0</span>
+          <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
+          <div class="mini-slots" id="mini-${app}"></div>
+        </div>`;
+      renderInputSlots(app);
+    });
+
+    function renderInputSlots(app) {
+      const container = document.getElementById(`slots-${app}`);
+      container.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const item = selection[app][i];
+        const slot = document.createElement('div');
+        slot.className = `slot ${item ? 'filled' : ''}`;
+        slot.innerHTML = item ? `$${item.val}` : '';
+        if (item) slot.onclick = () => { selection[app].splice(i, 1); renderInputSlots(app); };
+        container.appendChild(slot);
+      }
+      document.getElementById(`total-${app}`).innerText = `$${selection[app].reduce((sum, v) => sum + v.val, 0)}`;
+    }
+
+    function addVoucher(app, val) {
+      if (selection[app].length < 3) {
+        selection[app].push({ val: val, used: false });
+        renderInputSlots(app);
+      } else {
+        showToast('每間最多只能填 3 張', 'error');
+      }
+    }
+
+    function renderDashCard(app) {
+      const container = document.getElementById(`mini-${app}`);
+      container.innerHTML = '';
+
+      const totalAll = selection[app].reduce((a, b) => a + b.val, 0);
+      const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
+
+      document.getElementById(`v-${app}`).innerText = `$${totalAll}`;
+      document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
+      document.getElementById(`card-${app}`).style.opacity = totalAll > 0 ? "1" : "0.4";
+
+      selection[app].forEach((item, index) => {
+        const mini = document.createElement('div');
+        mini.className = `mini-slot ${item.used ? 'used' : ''}`;
+        mini.innerText = `$${item.val}`;
+        mini.onclick = () => toggleUsed(app, index);
+        container.appendChild(mini);
+      });
+    }
+
+    async function toggleUsed(app, slotIndex) {
+      const item = selection[app][slotIndex];
+      if (!item) return;
+      const period = getMacauPeriodTag();
+      const targetPaid = item.used ? 0 : 1;
+      const oldUsed = item.used;
+      item.used = !item.used;
+
+      const { error } = await _supabase.from('lottery_records')
+        .update({ amount_paid: targetPaid })
+        .eq('user_token', myToken)
+        .eq('period_tag', period)
+        .eq('payment_tool', app)
+        .eq('slot_index', slotIndex)
+        .eq('is_discarded', false);
 
       if (error) {
-        statsContainer.innerHTML = '<p style="color:#d32f2f;text-align:center;">載入失敗</p>';
-        console.error(error);
+        item.used = oldUsed;
+        showToast('核銷失敗，請稍後再試', 'error');
         return;
       }
+      renderDashCard(app);
+      updateGrandTotal();
+      showToast(item.used ? '已核銷' : '已取消核銷');
+    }
+
+    function updateGrandTotal() {
+      let grandTotal = 0;
+      let grandSpend = 0;
+      apps.forEach(app => {
+        const allV = selection[app].reduce((sum, v) => sum + v.val, 0);
+        const activeV = selection[app].filter(v => !v.used).reduce((sum, v) => sum + v.val, 0);
+        grandTotal += allV;
+        grandSpend += activeV;
+      });
+      document.getElementById('grand-total').innerText = `$${grandTotal}`;
+      document.getElementById('grand-spend').innerText = `$${(grandSpend * 3).toFixed(0)}`;
+    }
+
+    function showPage(pageName) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`page-${pageName}`).classList.add('active');
+      document.getElementById(`nav-${pageName}`).classList.add('active');
+      if (pageName === 'dash') {
+        apps.forEach(app => renderDashCard(app));
+        updateGrandTotal();
+      }
+      if (pageName === 'stats') loadStats();
+    }
+
+    async function loadData() {
+      const period = getMacauPeriodTag();
+      const { data } = await _supabase
+        .from('lottery_records')
+        .select('*')
+        .eq('user_token', myToken)
+        .eq('period_tag', period)
+        .eq('is_discarded', false);
+
+      apps.forEach(app => selection[app] = []);
+
+      (data || []).forEach(item => {
+        if (!selection[item.payment_tool]) selection[item.payment_tool] = [];
+        selection[item.payment_tool].push({
+          val: item.reward,
+          used: item.amount_paid === 1,
+          slot_index: item.slot_index
+        });
+      });
+
+      apps.forEach(app => {
+        selection[app] = selection[app] || [];
+        selection[app].sort((a, b) => a.slot_index - b.slot_index);
+        renderInputSlots(app);
+      });
+
+      document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong>`;
+      document.getElementById('user-info').innerText = `期數：${period} | ID: ${myToken}`;
+    }
+
+    async function saveData() {
+      const btn = event.currentTarget;
+      const originalText = btn.innerText;
+      btn.innerText = "儲存中...";
+      btn.disabled = true;
+
+      const period = getMacauPeriodTag();
+
+      await _supabase.from('lottery_records')
+        .update({ is_discarded: true })
+        .eq('user_token', myToken)
+        .eq('period_tag', period)
+        .eq('is_discarded', false);
+
+      const records = [];
+      apps.forEach(app => {
+        selection[app].forEach((item, index) => {
+          records.push({
+            user_token: myToken,
+            payment_tool: app,
+            reward: item.val,
+            amount_paid: item.used ? 1 : 0,
+            period_tag: period,
+            slot_index: index,
+            is_discarded: false
+          });
+        });
+      });
+
+      if (records.length > 0) {
+        await _supabase.from('lottery_records').insert(records);
+      }
+
+      showToast('儲存成功！');
+      btn.innerText = originalText;
+      btn.disabled = false;
+
+      await loadData();
+      showPage('dash');
+    }
+
+    async function loadStats() {
+      statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績...</div>';
+
+      const { data } = await _supabase
+        .from('lottery_records')
+        .select('period_tag, payment_tool, reward')
+        .eq('is_discarded', false)
+        .order('period_tag', { ascending: false });
 
       const periods = {};
       (data || []).forEach(row => {
         if (!periods[row.period_tag]) periods[row.period_tag] = {};
         if (!periods[row.period_tag][row.payment_tool]) periods[row.period_tag][row.payment_tool] = {};
-        const count = (periods[row.period_tag][row.payment_tool][row.reward] || 0) + 1;
-        periods[row.period_tag][row.payment_tool][row.reward] = count;
+        periods[row.period_tag][row.payment_tool][row.reward] = (periods[row.period_tag][row.payment_tool][row.reward] || 0) + 1;
       });
 
       let html = '';
@@ -148,17 +515,11 @@
       statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何有效期數紀錄</p>`;
     }
 
-    // ==================== 新增：清除自己所有資料（開發用） ====================
     async function clearMyData() {
       if (!confirm('⚠️ 確定要清除你所有的獎券資料嗎？此操作無法復原！')) return;
-
-      const { error } = await _supabase
-        .from('lottery_records')
-        .delete()
-        .eq('user_token', myToken);
-
+      const { error } = await _supabase.from('lottery_records').delete().eq('user_token', myToken);
       if (error) {
-        showToast('清除失敗：' + error.message, 'error');
+        showToast('清除失敗，請稍後再試', 'error');
       } else {
         showToast('已清除你所有的資料', 'success');
         await loadData();
@@ -166,11 +527,10 @@
       }
     }
 
-    // 其他函數（loadData、saveData 等）保持上一版（含 is_discarded 軟刪除）
-
+    // 啟動
     if (isDevMode()) {
       document.getElementById('nav-stats').style.display = 'flex';
-      document.getElementById('clear-btn').style.display = 'block';   // 顯示清除按鈕
+      document.getElementById('clear-btn').style.display = 'block';
     }
 
     const day = new Date().getDay();
