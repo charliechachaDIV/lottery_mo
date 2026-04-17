@@ -390,25 +390,34 @@ nav {
       }
     }
 
-    function renderDashCard(app) {
-      const container = document.getElementById(`mini-${app}`);
-      container.innerHTML = '';
+function renderDashCard(app) {
+  const container = document.getElementById(`mini-${app}`);
+  if (!container) return; // 確保容器存在
+  container.innerHTML = '';
 
-      const totalAll = selection[app].reduce((a, b) => a + b.val, 0);
-      const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
+  // 1. 計算該 APP 的總額（原本的寫法）
+  const totalAll = selection[app].reduce((a, b) => a + b.val, 0);
+  
+  // 2. 修改：計算「剩餘可用」金額（只算還沒 used 的）
+  const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
 
-      document.getElementById(`v-${app}`).innerText = `$${totalAll}`;
-      document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
-      document.getElementById(`card-${app}`).style.opacity = totalAll > 0 ? "1" : "0.4";
+  // 3. 更新介面顯示
+  // 將 v-${app} 改為顯示 activeTotal (剩餘金額)
+  document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
+  document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
+  
+  // 如果該平台所有券都用完了，讓卡片變淡
+  document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
 
-      selection[app].forEach((item, index) => {
-        const mini = document.createElement('div');
-        mini.className = `mini-slot ${item.used ? 'used' : ''}`;
-        mini.innerText = `$${item.val}`;
-        mini.onclick = () => toggleUsed(app, index);
-        container.appendChild(mini);
-      });
-    }
+  // 4. 生成小格子
+  selection[app].forEach((item, index) => {
+    const mini = document.createElement('div');
+    mini.className = `mini-slot ${item.used ? 'used' : ''}`;
+    mini.innerText = `$${item.val}`;
+    mini.onclick = () => toggleUsed(app, index);
+    container.appendChild(mini);
+  });
+}
 
     async function toggleUsed(app, slotIndex) {
       const item = selection[app][slotIndex];
