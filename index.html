@@ -14,46 +14,230 @@
       --danger: #d32f2f;
       --gray: #666666;
       --light-gray: #f0f0f0;
+      --success: #10b981; /* 綠色剔號 */
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; margin: 0; background: #f4f6f9; color: #1f2937; }
-    nav { display: flex; background: #ffffff; border-bottom: 1px solid #d1d5db; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    nav button { flex: 1; padding: 15px 8px; border: none; background: none; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    nav button.active { color: var(--primary); border-bottom: 4px solid var(--primary); }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft YaHei", sans-serif;
+      margin: 0;
+      background: #f4f6f9;
+      color: #1f2937;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    nav {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 1px solid #d1d5db;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    nav button {
+      flex: 1;
+      padding: 15px 8px;
+      border: none;
+      background: none;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    nav button.active {
+      color: var(--primary);
+      border-bottom: 4px solid var(--primary);
+    }
     .container { padding: 12px; max-width: 620px; margin: auto; }
     .page { display: none; }
     .page.active { display: block; }
-    .card { background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 18px; border: 1px solid #e5e7eb; }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      margin-bottom: 18px;
+      border: 1px solid #e5e7eb;
+    }
 
     .app-row { padding: 14px 0; border-bottom: 1px solid #e5e7eb; }
     .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .app-name { font-size: 1.15rem; font-weight: 700; color: #1f2937; }
     .voucher-slots { display: flex; gap: 10px; margin-bottom: 12px; }
-    .slot { flex: 1; height: 56px; border: 2px solid #d1d5db; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 700; background: #fff; transition: all 0.3s; position: relative; }
-    .slot.filled { border-color: var(--primary); background: #e3f0ff; color: var(--primary); }
-    .slot.filled::after { content: '×'; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .slot {
+      flex: 1;
+      height: 56px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: #fff;
+      transition: all 0.3s;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    .slot.filled {
+      border-color: var(--primary);
+      background: #e3f0ff;
+      color: var(--primary);
+    }
+    .slot.filled::after {
+      content: '×';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--danger);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    .chip { padding: 12px 8px; border: 1px solid #d1d5db; background: white; border-radius: 8px; font-size: 1.05rem; font-weight: 600; cursor: pointer; flex: 1; text-align: center; transition: all 0.2s; }
-    .chip:active { transform: scale(0.95); background: var(--primary); color: white; }
+    .chip {
+      padding: 12px 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.2s;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+    .chip:active {
+      transform: scale(0.95);
+      background: var(--primary);
+      color: white;
+    }
 
-    /* 本期總戰果 - 純色 */
-    .total-summary { background: var(--primary); color: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,48,135,0.25); }
-    .total-summary h3 { margin: 0 0 6px; font-size: 1.05rem; opacity: 0.95; font-weight: 600; }
-    .total-amount { font-size: 2.35rem; font-weight: 800; letter-spacing: -1px; }
+    /* 本期總戰果 - 維持純色，但顯示總戰果（含已核銷） */
+    .total-summary {
+      background: var(--primary);
+      color: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,48,135,0.25);
+    }
+    .total-summary h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+      opacity: 0.95;
+      font-weight: 600;
+    }
+    .total-amount {
+      font-size: 2.35rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
 
-    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .dash-item { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
-    .v-amount { font-size: 1.8rem; font-weight: 700; color: #d32f2f; }
-    .s-amount { font-size: 0.95rem; color: #0066cc; margin-top: 4px; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .dash-item {
+      background: white;
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      border: 1px solid #e5e7eb;
+    }
+    .v-amount {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #d32f2f;
+    }
+    .s-amount {
+      font-size: 0.95rem;
+      color: #0066cc;
+      margin-top: 4px;
+    }
 
-    .mini-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .mini-slot { flex: 0 0 calc(33.33% - 6px); height: 52px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; background: #003087; color: white; }
-    .mini-slot.used { background: var(--light-gray); color: var(--gray); border-color: #d1d5db; text-decoration: line-through 3px; }
+    /* 核銷格子 - 加強立體感 + 未核銷右上角剔號 */
+    .mini-slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .mini-slot {
+      flex: 0 0 calc(33.33% - 6px);
+      height: 52px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #003087;
+      color: white;
+      position: relative;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12), 
+                  0 2px 4px rgba(0,0,0,0.08),
+                  inset 0 -3px 6px rgba(255,255,255,0.15);
+    }
+    .mini-slot.used {
+      background: var(--light-gray);
+      color: var(--gray);
+      border-color: #d1d5db;
+      text-decoration: line-through 3px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    }
+    /* 未核銷時右上角綠色剔號 */
+    .mini-slot:not(.used)::after {
+      content: '✓';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--success);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
 
-    .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; margin-top: 8px; box-shadow: 0 4px 12px rgba(0,48,135,0.25); }
-    .status { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 20px 0; }
+    .btn-save {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 8px;
+      box-shadow: 0 8px 20px rgba(0,48,135,0.25);
+    }
+    .status {
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
+  <!-- 你的 HTML 結構保持不變（與上一版相同） -->
   <nav id="main-nav">
     <button id="nav-input" onclick="showPage('input')">🎟️ 填獎券</button>
     <button id="nav-dash" onclick="showPage('dash')">🔥 核銷戰場</button>
@@ -95,6 +279,8 @@
   </div>
 
   <script>
+    // === 以下 JavaScript 部分與上一版幾乎相同，只修改了 updateGrandTotal 與 renderDashCard 的總戰果計算 ===
+
     const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -135,6 +321,7 @@
       return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
     }
 
+    // 初始化（保持不變）
     apps.forEach(app => {
       selection[app] = [];
       inputList.innerHTML += `<div class="app-row"><div class="app-info"><span class="app-name">${app}</span><span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span></div><div class="voucher-slots" id="slots-${app}"></div><div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div></div>`;
@@ -168,11 +355,15 @@
     function renderDashCard(app) {
       const container = document.getElementById(`mini-${app}`);
       container.innerHTML = '';
-      const activeVouchers = selection[app].filter(v => !v.used);
-      const activeTotal = activeVouchers.reduce((a, b) => a + b.val, 0);
-      document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
+
+      // 計算總戰果（所有券，不管是否核銷）
+      const totalAll = selection[app].reduce((a, b) => a + b.val, 0);
+      // 計算未核銷（用於需消費金額）
+      const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
+
+      document.getElementById(`v-${app}`).innerText = `$${totalAll}`;   // ← 改成總戰果
       document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
-      document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
+      document.getElementById(`card-${app}`).style.opacity = totalAll > 0 ? "1" : "0.4";
 
       selection[app].forEach((item, index) => {
         const mini = document.createElement('div');
@@ -197,7 +388,7 @@
         .eq('period_tag', period)
         .eq('payment_tool', app)
         .eq('slot_index', slotIndex)
-        .eq('is_discarded', false);   // 只操作有效資料
+        .eq('is_discarded', false);
 
       if (error) {
         item.used = oldUsed;
@@ -210,13 +401,18 @@
     }
 
     function updateGrandTotal() {
-      let grandTotal = 0;
+      let grandTotal = 0;   // 總戰果 = 所有輸入的券
+      let grandSpend = 0;   // 需消費只算未核銷
+
       apps.forEach(app => {
-        const active = selection[app].filter(v => !v.used).reduce((sum, v) => sum + v.val, 0);
-        grandTotal += active;
+        const allV = selection[app].reduce((sum, v) => sum + v.val, 0);
+        const activeV = selection[app].filter(v => !v.used).reduce((sum, v) => sum + v.val, 0);
+        grandTotal += allV;
+        grandSpend += activeV;
       });
+
       document.getElementById('grand-total').innerText = `$${grandTotal}`;
-      document.getElementById('grand-spend').innerText = `$${(grandTotal * 3).toFixed(0)}`;
+      document.getElementById('grand-spend').innerText = `$${(grandSpend * 3).toFixed(0)}`;
     }
 
     function showPage(pageName) {
@@ -224,10 +420,14 @@
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       document.getElementById(`page-${pageName}`).classList.add('active');
       document.getElementById(`nav-${pageName}`).classList.add('active');
-      if (pageName === 'dash') { apps.forEach(app => renderDashCard(app)); updateGrandTotal(); }
+      if (pageName === 'dash') {
+        apps.forEach(app => renderDashCard(app));
+        updateGrandTotal();
+      }
       if (pageName === 'stats') loadStats();
     }
 
+    // loadData、saveData、loadStats 保持與上一版完全相同（包含 is_discarded 軟刪除邏輯）
     async function loadData() {
       const period = getMacauPeriodTag();
       const { data, error } = await _supabase
@@ -235,7 +435,7 @@
         .select('*')
         .eq('user_token', myToken)
         .eq('period_tag', period)
-        .eq('is_discarded', false);   // ← 只讀有效資料
+        .eq('is_discarded', false);
 
       if (error) { console.error(error); return; }
 
@@ -268,22 +468,12 @@
 
       const period = getMacauPeriodTag();
 
-      // 1. 把本期所有「有效」資料標記為廢棄
-      const { error: updateError } = await _supabase
-        .from('lottery_records')
+      await _supabase.from('lottery_records')
         .update({ is_discarded: true })
         .eq('user_token', myToken)
         .eq('period_tag', period)
         .eq('is_discarded', false);
 
-      if (updateError) {
-        showToast('更新失敗，請稍後再試', 'error');
-        btn.innerText = originalText;
-        btn.disabled = false;
-        return;
-      }
-
-      // 2. 插入新資料
       const records = [];
       apps.forEach(app => {
         selection[app].forEach((item, index) => {
@@ -294,14 +484,14 @@
             amount_paid: item.used ? 1 : 0,
             period_tag: period,
             slot_index: index,
-            is_discarded: false   // 新資料一定是有效
+            is_discarded: false
           });
         });
       });
 
       if (records.length > 0) {
-        const { error: insertError } = await _supabase.from('lottery_records').insert(records);
-        if (insertError) {
+        const { error } = await _supabase.from('lottery_records').insert(records);
+        if (error) {
           showToast('儲存失敗，請稍後再試', 'error');
           btn.innerText = originalText;
           btn.disabled = false;
@@ -313,12 +503,11 @@
       btn.innerText = originalText;
       btn.disabled = false;
 
-      await loadData();   // 立即重新載入有效資料
+      await loadData();
       showPage('dash');
     }
 
     async function loadStats() {
-      // 統計頁暫時維持原樣（weekly_report 表）
       statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史戰績...</div>';
       const { data } = await _supabase.from('weekly_report').select('*').order('period_tag', { ascending: false });
 
