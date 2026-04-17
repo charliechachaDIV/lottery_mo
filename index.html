@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>消費獎賞助手 - 排序優化版</title>
+    <title>消費獎賞助手 - 實時核銷版</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #007bff; --bg: #f4f7f9; --danger: #d9534f; --success: #28a745; }
+        :root { --primary: #007bff; --bg: #f4f7f9; --danger: #d9534f; --success: #28a745; --gray: #adb5bd; }
         body { font-family: -apple-system, sans-serif; margin: 0; background-color: var(--bg); color: #333; }
         nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
         nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 1rem; cursor: pointer; color: #666; }
@@ -16,25 +16,26 @@
         .page.active { display: block; }
         .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
+        /* A區：輸入頁 */
         .app-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee; }
         .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .app-name { font-weight: bold; font-size: 1.1rem; }
-        
         .voucher-slots { display: flex; gap: 8px; margin-bottom: 10px; }
-        .slot { flex: 1; height: 45px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; cursor: pointer; background: #fff; transition: 0.2s; }
+        .slot { flex: 1; height: 45px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; cursor: pointer; background: #fff; }
         .slot.filled { border-style: solid; border-color: var(--primary); color: var(--primary); background: #e7f1ff; }
-        /* 刪除小叉叉 */
         .slot.filled::after { content: '×'; position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-
         .btn-group { display: flex; gap: 5px; }
         .chip { padding: 10px 5px; border: 1px solid #ddd; background: white; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; text-align: center; }
-        .chip:active { background: #eee; }
 
+        /* B區：看板頁與點擊格 */
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; }
+        .dash-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; transition: 0.3s; }
         .v-amount { color: var(--danger); font-size: 1.2rem; font-weight: bold; display: block; }
         .s-amount { color: var(--success); font-size: 0.85rem; }
-        .v-detail { font-size: 0.7rem; color: #999; margin-top: 4px; }
+        
+        .mini-slots { display: flex; gap: 4px; margin-top: 8px; }
+        .mini-slot { flex: 1; height: 30px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #f8f9fa; color: var(--primary); font-weight: bold; }
+        .mini-slot.used { background: #e9ecef; color: var(--gray); text-decoration: line-through; border-style: dashed; }
 
         .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; margin-top: 10px; font-weight: bold; }
         .status { font-size: 0.7rem; color: #aaa; text-align: center; margin: 20px 0; }
@@ -54,13 +55,13 @@
                     更新本週紀錄 <small id="today-hint" style="color:var(--success); font-size:0.8rem;"></small>
                 </h2>
                 <div id="input-list"></div>
-                <button class="btn-save" onclick="saveData()">儲存並統計明細</button>
+                <button class="btn-save" onclick="saveData()">儲存明細</button>
             </div>
         </div>
 
         <div id="page-dash" class="page">
             <div class="card">
-                <h2 style="margin-top:0">核銷看板 ($3倍門檻)</h2>
+                <h2 style="margin-top:0">核銷看板 (點擊明細扣除)</h2>
                 <div class="dashboard" id="dashboard-grid"></div>
             </div>
         </div>
@@ -72,28 +73,23 @@
         const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 更新後的排序
         const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
         const denominations = [10, 20, 50, 100, 200];
-        let selection = {}; 
+        let selection = {}; // 格式: { 'MPay': [{val:10, used:false}, {val:50, used:false}] }
         let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('lottery_token', myToken);
 
         const inputList = document.getElementById('input-list');
         const dashGrid = document.getElementById('dashboard-grid');
 
+        // 初始化
         apps.forEach(app => {
             selection[app] = [];
             inputList.innerHTML += `
                 <div class="app-row">
-                    <div class="app-info">
-                        <span class="app-name">${app}</span>
-                        <span id="total-${app}" style="color:var(--primary); font-weight:bold;">$0</span>
-                    </div>
+                    <div class="app-info"><span class="app-name">${app}</span><span id="total-${app}" style="color:var(--primary); font-weight:bold;">$0</span></div>
                     <div class="voucher-slots" id="slots-${app}"></div>
-                    <div class="btn-group">
-                        ${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}', ${d})">${d}</button>`).join('')}
-                    </div>
+                    <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}', ${d})">${d}</button>`).join('')}</div>
                 </div>`;
             
             dashGrid.innerHTML += `
@@ -101,48 +97,58 @@
                     <div class="app-name" style="font-size:0.8rem">${app}</div>
                     <span class="v-amount" id="v-${app}">$0</span>
                     <div class="s-amount">需花: <span id="s-${app}">$0</span></div>
-                    <div class="v-detail" id="detail-${app}">無券</div>
+                    <div class="mini-slots" id="mini-${app}"></div>
                 </div>`;
-            renderSlots(app);
+            renderInputSlots(app);
         });
 
-        // 修正填入邏輯：從左往右排
-        function renderSlots(app) {
+        // --- A區 邏輯 ---
+        function renderInputSlots(app) {
             const container = document.getElementById(`slots-${app}`);
             container.innerHTML = '';
-            // 永遠渲染 3 個格子
             for (let i = 0; i < 3; i++) {
-                const val = selection[app][i]; // 依序取值
+                const item = selection[app][i];
                 const slot = document.createElement('div');
-                slot.className = `slot ${val ? 'filled' : ''}`;
-                slot.innerHTML = val ? `$${val}` : '';
-                slot.onclick = () => removeVoucher(app, i);
+                slot.className = `slot ${item ? 'filled' : ''}`;
+                slot.innerHTML = item ? `$${item.val}` : '';
+                slot.onclick = () => { if(item) { selection[app].splice(i, 1); renderInputSlots(app); } };
                 container.appendChild(slot);
             }
-            updateCalculations(app);
+            document.getElementById(`total-${app}`).innerText = `$${selection[app].reduce((a, b) => a + b.val, 0)}`;
         }
 
         function addVoucher(app, val) {
             if (selection[app].length < 3) {
-                selection[app].push(val); // 增加到陣列末尾
-                renderSlots(app);
+                selection[app].push({ val: val, used: false });
+                renderInputSlots(app);
             }
         }
 
-        function removeVoucher(app, index) {
-            if (selection[app][index] !== undefined) {
-                selection[app].splice(index, 1); // 刪除指定位置並遞補
-                renderSlots(app);
-            }
-        }
+        // --- B區 邏輯 ---
+        function renderDashCard(app) {
+            const container = document.getElementById(`mini-${app}`);
+            container.innerHTML = '';
+            
+            // 計算「未核銷」的總額
+            const activeVouchers = selection[app].filter(v => !v.used);
+            const activeTotal = activeVouchers.reduce((a, b) => a + b.val, 0);
 
-        function updateCalculations(app) {
-            const total = selection[app].reduce((a, b) => a + b, 0);
-            document.getElementById(`total-${app}`).innerText = `$${total}`;
-            document.getElementById(`v-${app}`).innerText = `$${total}`;
-            document.getElementById(`s-${app}`).innerText = `$${(total * 3).toFixed(0)}`;
-            document.getElementById(`detail-${app}`).innerText = selection[app].length > 0 ? `明細: ${selection[app].join(', ')}` : '無券';
-            document.getElementById(`card-${app}`).style.opacity = total > 0 ? "1" : "0.3";
+            // 更新看板金額
+            document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
+            document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
+            document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
+
+            // 生成小點擊格
+            selection[app].forEach((item, index) => {
+                const mini = document.createElement('div');
+                mini.className = `mini-slot ${item.used ? 'used' : ''}`;
+                mini.innerText = `$${item.val}`;
+                mini.onclick = () => {
+                    item.used = !item.used; // 切換狀態
+                    renderDashCard(app); // 重新計算並渲染該卡片
+                };
+                container.appendChild(mini);
+            });
         }
 
         function showPage(pageName) {
@@ -150,18 +156,20 @@
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
             document.getElementById(`page-${pageName}`).classList.add('active');
             document.getElementById(`nav-${pageName}`).classList.add('active');
+            if(pageName === 'dash') apps.forEach(app => renderDashCard(app));
         }
 
+        // --- 數據處理 ---
         async function loadData() {
             const { data } = await _supabase.from('lottery_records').select('*').eq('user_token', myToken);
             if (data) {
                 apps.forEach(app => selection[app] = []);
                 data.forEach(item => {
                     if (selection[item.payment_tool].length < 3) {
-                        selection[item.payment_tool].push(item.reward);
+                        selection[item.payment_tool].push({ val: item.reward, used: false });
                     }
                 });
-                apps.forEach(app => renderSlots(app));
+                apps.forEach(app => renderInputSlots(app));
                 document.getElementById('user-info').innerText = `系統偵測：星期${"日一二三四五六"[new Date().getDay()]} | ID: ${myToken}`;
             }
         }
@@ -171,23 +179,19 @@
             btn.innerText = "儲存中...";
             const records = [];
             apps.forEach(app => {
-                selection[app].forEach(val => {
-                    records.push({ user_token: myToken, payment_tool: app, reward: val, amount_paid: 0 });
+                selection[app].forEach(item => {
+                    records.push({ user_token: myToken, payment_tool: app, reward: item.val, amount_paid: 0 });
                 });
             });
             await _supabase.from('lottery_records').delete().eq('user_token', myToken);
             if (records.length > 0) await _supabase.from('lottery_records').insert(records);
-            btn.innerText = "儲存並統計明細";
+            btn.innerText = "儲存明細";
             showPage('dash');
         }
 
+        // 初始自動分頁
         const day = new Date().getDay();
-        if ([0, 5, 6].includes(day)) {
-            showPage('input');
-            document.getElementById('today-hint').innerText = "(週末輸入模式)";
-        } else {
-            showPage('dash');
-        }
+        if ([0, 5, 6].includes(day)) showPage('input'); else showPage('dash');
         loadData();
     </script>
 </body>
