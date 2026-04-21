@@ -623,35 +623,6 @@ nav {
     if ([0, 5, 6].includes(day)) showPage('input');
     else showPage('dash');
     loadData();
-
-  (function() {
-    let retryCount = 0;
-    
-    const watchAndLoad = () => {
-        const params = new URLSearchParams(window.location.search);
-        const urlId = params.get('id');
-
-        // 檢查條件：網址裡有沒有 ID？
-        if (urlId && urlId.startsWith('user_')) {
-            console.log("偵測到 ID，開始載入資料: " + urlId);
-            // 這裡確保 ID 被寫入內層變數
-            myToken = urlId; 
-            loadData();
-            
-            // 決定顯示哪一頁
-            const day = new Date().getDay();
-            showPage([0, 5, 6].includes(day) ? 'input' : 'dash');
-        } 
-        else if (retryCount < 20) { 
-            // 如果沒 ID，等 0.2 秒再看一次，最多等 4 秒
-            retryCount++;
-            setTimeout(watchAndLoad, 200);
-        }
-    };
-
-    // 啟動監視
-    watchAndLoad();
-})();
   
 </script>
 
