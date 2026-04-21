@@ -315,7 +315,7 @@ nav {
     <div id="user-info" class="status">載入中...</div>
   </div>
 
-  <script>
+<script>
     const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -323,46 +323,34 @@ nav {
     const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
     const denominations = [10, 20, 50, 100, 200];
 
-    // --- ID 鎖定邏輯開始 ---
-    const urlParams = new URLSearchParams(window.location.search);
-    let urlId = urlParams.get('id');
+    // --- 【核心修正：ID 鎖定與網址同步邏輯】 ---
+    const currentUrl = new URL(window.location.href);
+    let urlId = currentUrl.searchParams.get('id');
     
-    // 優先序：網址參數 > 本地儲存 > 隨機生成
-    let myToken = urlId || localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
+    // 取得 ID：優先看網址 > 本地儲存 > 隨機生成
+    let myToken = urlId || localStorage.getItem('lottery_token');
+    if (!myToken) {
+        myToken = 'user_' + Math.random().toString(36).substr(2, 9);
+    }
     
-    // 確保本地儲存與最新 Token 同步
+    // 同步到本地儲存
     localStorage.setItem('lottery_token', myToken);
 
-    // 如果網址上沒有 ID，自動補上去（不會刷新頁面，但會改變地址列）
-    if (!urlId) {
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + 
-                       '?' + (window.location.search ? window.location.search + '&' : '') + 'id=' + myToken;
-        window.history.replaceState({ path: newUrl }, '', newUrl);
+    // 如果網址上沒有 ID 或 ID 不符，更新網址列（不刷新頁面）
+    if (urlId !== myToken) {
+        currentUrl.searchParams.set('id', myToken);
+        window.history.replaceState({ path: currentUrl.href }, '', currentUrl.href);
     }
-    // --- ID 鎖定邏輯結束 ---
+    // --- 鎖定邏輯結束 ---
 
     let selection = {};
     const inputList = document.getElementById('input-list');
     const dashGrid = document.getElementById('dashboard-grid');
     const statsContainer = document.getElementById('stats-container');
 
+    // 修改此函數以適應新的 URL 物件
     function isDevMode() {
-        // 因為現在參數多了 id，所以用 urlParams 檢查 DEV
-        return urlParams.get('DEV') === 'charliechacha623105';
-    }
-    
-
-    let selection = {};
-    let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('lottery_token', myToken);
-
-    const inputList = document.getElementById('input-list');
-    const dashGrid = document.getElementById('dashboard-grid');
-    const statsContainer = document.getElementById('stats-container');
-
-    function isDevMode() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('DEV') === 'charliechacha623105';
+        return currentUrl.searchParams.get('DEV') === 'charliechacha623105';
     }
 
     function showToast(msg, type = 'success') {
@@ -385,7 +373,7 @@ nav {
       return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
     }
 
-    // 初始化
+    // 初始化介面
     apps.forEach(app => {
       selection[app] = [];
       inputList.innerHTML += `
@@ -396,13 +384,6 @@ nav {
           </div>
           <div class="voucher-slots" id="slots-${app}"></div>
           <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div>
-        </div>`;
-      dashGrid.innerHTML += `
-        <div class="dash-item" id="card-${app}">
-          <div class="app-name" style="font-size:0.95rem">${app}</div>
-          <span class="v-amount" id="v-${app}">$0</span>
-          <div class="s-amount">需消費: <span id="s-${app}">$0</span></div>
-          <div class="mini-slots" id="mini-${app}"></div>
         </div>`;
       renderInputSlots(app);
     });
