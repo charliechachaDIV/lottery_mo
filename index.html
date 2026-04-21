@@ -623,20 +623,23 @@ nav {
     if ([0, 5, 6].includes(day)) showPage('input');
     else showPage('dash');
     loadData();
-</script>
-// GitHub 代碼的最下面
-window.onload = function() {
-    // 延遲 1000 毫秒（1秒）自動執行，確保 ID 已經被解析完成
-    setTimeout(() => {
-        loadData();
-        console.log("自動載入完成");
-    }, 1000);
-    
-    // 原本的其他啟動邏輯 (如 showPage) 保持不變
-    const day = new Date().getDay();
-    if ([0, 5, 6].includes(day)) showPage('input');
-    else showPage('dash');
+
+    // GitHub 代碼的最下面
+    window.onload = function() {
+        // 延遲 1000 毫秒（1秒）自動執行，確保 ID 已經被解析完成
+        setTimeout(() => {
+            loadData();
+            console.log("自動載入完成");
+        }, 1000);
+        
+        // 原本的其他啟動邏輯 (如 showPage) 保持不變
+        const day = new Date().getDay();
+        if ([0, 5, 6].includes(day)) showPage('input');
+        else showPage('dash');
 };
+  
+</script>
+
 
 </body>
 </html>
