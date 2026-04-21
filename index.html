@@ -323,6 +323,35 @@ nav {
     const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
     const denominations = [10, 20, 50, 100, 200];
 
+    // --- ID 鎖定邏輯開始 ---
+    const urlParams = new URLSearchParams(window.location.search);
+    let urlId = urlParams.get('id');
+    
+    // 優先序：網址參數 > 本地儲存 > 隨機生成
+    let myToken = urlId || localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
+    
+    // 確保本地儲存與最新 Token 同步
+    localStorage.setItem('lottery_token', myToken);
+
+    // 如果網址上沒有 ID，自動補上去（不會刷新頁面，但會改變地址列）
+    if (!urlId) {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + 
+                       '?' + (window.location.search ? window.location.search + '&' : '') + 'id=' + myToken;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+    // --- ID 鎖定邏輯結束 ---
+
+    let selection = {};
+    const inputList = document.getElementById('input-list');
+    const dashGrid = document.getElementById('dashboard-grid');
+    const statsContainer = document.getElementById('stats-container');
+
+    function isDevMode() {
+        // 因為現在參數多了 id，所以用 urlParams 檢查 DEV
+        return urlParams.get('DEV') === 'charliechacha623105';
+    }
+    
+
     let selection = {};
     let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('lottery_token', myToken);
