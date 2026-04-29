@@ -3,12 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>社區消費大獎賞2026 核銷小助手 </title>
+  <title>社區消費大獎賞2026 核銷小助手</title>
   <meta name="description" content="2026消費獎賞實時核銷助手，支援MPay、中銀等8大平台，自動計算3倍門檻。">
-<meta name="keywords" content="2026消費獎賞, 澳門消費獎賞, 核銷助手, 3倍門檻">
-
-<meta property="og:title" content="2026消費獎賞 核銷小助手 - 點擊格子即時紀錄核銷">
-<meta property="og:description" content="唔使再用紙筆記！自動對齊澳門時間，週五0:00自動更新。">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -26,34 +22,23 @@
       margin: 0;
       background: #f4f6f9;
       color: #1f2937;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
     }
-    /* 修改 nav 樣式 */
-nav {
-  display: flex;
-  align-items: center; /* 關鍵：垂直居中 */
-  background: #ffffff;
-  border-bottom: 1px solid #d1d5db;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  padding: 0 10px; /* 給左右留點空間 */
-}
-
-/* 新增 LOGO 樣式 */
-.nav-logo {
-  height: 28px; /* 關鍵：強制高度，讓它變小 */
-  width: auto; /* 寬度自動縮放 */
-  margin-right: 15px; /* 給 LOGO 右邊留白 */
-  transition: opacity 0.2s; /* 懸停效果動畫 */
-}
-
-.nav-logo-link:hover .nav-logo {
-  opacity: 0.8; /* 懸停時半透明 */
-}
+    nav {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border-bottom: 1px solid #d1d5db;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 0 10px;
+    }
+    .nav-logo {
+      height: 28px;
+      width: auto;
+      margin-right: 15px;
+    }
     nav button {
       flex: 1;
       padding: 15px 8px;
@@ -75,11 +60,10 @@ nav {
       background: #ffffff;
       border-radius: 12px;
       padding: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
       margin-bottom: 18px;
       border: 1px solid #e5e7eb;
     }
-
     .app-row { padding: 14px 0; border-bottom: 1px solid #e5e7eb; }
     .app-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .app-name { font-size: 1.15rem; font-weight: 700; color: #1f2937; }
@@ -97,7 +81,6 @@ nav {
       background: #fff;
       transition: all 0.3s;
       position: relative;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
     }
     .slot.filled {
       border-color: var(--primary);
@@ -119,7 +102,6 @@ nav {
       align-items: center;
       justify-content: center;
     }
-
     .chip {
       padding: 12px 8px;
       border: 1px solid #d1d5db;
@@ -131,15 +113,12 @@ nav {
       flex: 1;
       text-align: center;
       transition: all 0.2s;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
     }
     .chip:active {
       transform: scale(0.95);
       background: var(--primary);
       color: white;
     }
-
-    /* 本期總戰果 - 純色，顯示全部總和（含已核銷） */
     .total-summary {
       background: var(--primary);
       color: white;
@@ -160,7 +139,6 @@ nav {
       font-weight: 800;
       letter-spacing: -1px;
     }
-
     .dashboard {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -170,7 +148,7 @@ nav {
       background: white;
       padding: 14px;
       border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
       border: 1px solid #e5e7eb;
     }
     .v-amount {
@@ -183,8 +161,6 @@ nav {
       color: #0066cc;
       margin-top: 4px;
     }
-
-    /* 核銷格子 - 立體感加強 + 未核銷顯示綠色剔號 */
     .mini-slots {
       display: flex;
       flex-wrap: wrap;
@@ -206,9 +182,7 @@ nav {
       background: #003087;
       color: white;
       position: relative;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.12), 
-                  0 2px 4px rgba(0,0,0,0.08),
-                  inset 0 -3px 6px rgba(255,255,255,0.15);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
     }
     .mini-slot.used {
       background: var(--light-gray);
@@ -217,24 +191,6 @@ nav {
       text-decoration: line-through 3px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.06);
     }
-    .mini-slot:not(.used)::after {
-      content: '✓';
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: var(--success);
-      color: white;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
     .btn-save {
       width: 100%;
       padding: 16px;
@@ -249,40 +205,28 @@ nav {
     }
     .status {
       font-size: 0.8rem;
-      /* 這裡設定第一行（期數）的顏色 */
-      color: #4b5563; 
+      color: #4b5563;
       text-align: center;
       margin: 35px 0 25px;
       line-height: 1.8;
-    }
-    
-    /* 專門針對第二行 Made by 的顏色調整 */
-    .status span, .status a {
-      color: #6b7280 !important; 
-    }
-    
-    .status a:hover {
-      color: #003087 !important; /* 滑鼠移上去 Email 時變藍色，增加互動感 */
     }
   </style>
 </head>
 <body>
   <nav id="main-nav">
-  <a href="https://www.charliechacha.com/" target="_parent" class="nav-logo-link" title="返回 YieldSpot 網站">
-    <img src="https://www.charliechacha.com/wp-content/uploads/pages/logoword.png" alt="YieldSpot" class="nav-logo">
-  </a>
-  
-  <button id="nav-input" onclick="showPage('input')">🎁 登記獎券</button>
-  <button id="nav-dash" onclick="showPage('dash')">🧮 核銷看板</button>
-  
-  <button id="nav-stats" onclick="showPage('stats')" style="display:none;">📊 核銷統計</button>
-</nav>
+    <a href="https://www.charliechacha.com/" target="_parent" class="nav-logo-link" title="返回 YieldSpot 網站">
+      <img src="https://www.charliechacha.com/wp-content/uploads/pages/logoword.png" alt="YieldSpot" class="nav-logo">
+    </a>
+    <button id="nav-input" onclick="showPage('input')">🎁 登記獎券</button>
+    <button id="nav-dash" onclick="showPage('dash')">🧮 核銷看板</button>
+    <button id="nav-stats" onclick="showPage('stats')" style="display:none;">📊 核銷統計</button>
+  </nav>
 
   <div class="container">
     <div id="page-input" class="page">
       <div class="card">
         <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.25rem; color:#1f2937;">
-          本期獎券登記 
+          本期獎券登記
           <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
         </h2>
         <div id="input-list"></div>
@@ -294,8 +238,8 @@ nav {
       <div class="card">
         <h2 style="margin-top:0; font-size:1.25rem; color:#1f2937;">即時核銷看板（點擊格子扣除）</h2>
         <p style="font-size:0.85rem; color:var(--gray); margin-top:-10px; margin-bottom:15px;">
-        💡 點擊下方藍色格子即可核銷獎券，系統會自動幫您計算剩餘需消費金額。
-</p>
+          💡 點擊下方藍色格子即可核銷獎券，系統會自動幫您計算剩餘需消費金額。
+        </p>
         <div class="total-summary">
           <h3>本期總獎券</h3>
           <div class="total-amount" id="grand-total">$0</div>
@@ -315,8 +259,7 @@ nav {
     <div id="user-info" class="status">載入中...</div>
   </div>
 
-<script>
-    // 1. 基本配置
+  <script>
     const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -324,37 +267,25 @@ nav {
     const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
     const denominations = [10, 20, 50, 100, 200];
 
-    // --- 2. 核心 ID 鎖定與網址同步邏輯 (針對 WordPress 網址優化) ---
+    // Token 邏輯
     const currentUrl = new URL(window.location.href);
     let urlId = currentUrl.searchParams.get('id');
-    
-    // 取得身分：網址優先 > 本地儲存 > 隨機生成
     let myToken = urlId || localStorage.getItem('lottery_token');
-    
-    if (!myToken) {
-        myToken = 'user_' + Math.random().toString(36).substr(2, 9);
-    }
-    
-    // 備份到本地儲存
+    if (!myToken) myToken = 'user_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('lottery_token', myToken);
-
-    // 如果網址上沒有 ID，自動補上去（會保留原本的 fs=1）
     if (urlId !== myToken) {
-        currentUrl.searchParams.set('id', myToken);
-        window.history.replaceState({ path: currentUrl.href }, '', currentUrl.href);
+      currentUrl.searchParams.set('id', myToken);
+      window.history.replaceState({ path: currentUrl.href }, '', currentUrl.href);
     }
-    // --- 鎖定邏輯結束 ---
 
     let selection = {};
     const inputList = document.getElementById('input-list');
     const dashGrid = document.getElementById('dashboard-grid');
     const statsContainer = document.getElementById('stats-container');
 
-    // 判斷是否為開發模式
     function isDevMode() {
-        // 使用 URL 物件重新取得最新的參數
-        const params = new URLSearchParams(window.location.search);
-        return params.get('DEV') === 'charliechacha623105';
+      const params = new URLSearchParams(window.location.search);
+      return params.get('DEV') === 'charliechacha623105';
     }
 
     function showToast(msg, type = 'success') {
@@ -377,7 +308,7 @@ nav {
       return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
     }
 
-    // 初始化應用程式列表
+    // 初始化輸入頁
     apps.forEach(app => {
       selection[app] = [];
       inputList.innerHTML += `
@@ -419,10 +350,12 @@ nav {
       const container = document.getElementById(`mini-${app}`);
       if (!container) return;
       container.innerHTML = '';
+
       const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
-      document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
-      document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
-      document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
+      const vEl = document.getElementById(`v-${app}`);
+      const sEl = document.getElementById(`s-${app}`);
+      if (vEl) vEl.innerText = `$${activeTotal}`;
+      if (sEl) sEl.innerText = `$${(activeTotal * 3).toFixed(0)}`;
 
       selection[app].forEach((item, index) => {
         const mini = document.createElement('div');
@@ -436,6 +369,7 @@ nav {
     async function toggleUsed(app, slotIndex) {
       const item = selection[app][slotIndex];
       if (!item) return;
+
       const period = getMacauPeriodTag();
       const targetPaid = item.used ? 0 : 1;
       const oldUsed = item.used;
@@ -451,12 +385,13 @@ nav {
 
       if (error) {
         item.used = oldUsed;
-        showToast('核銷失敗', 'error');
+        showToast('核銷失敗，請稍後再試', 'error');
         return;
       }
+
       renderDashCard(app);
       updateGrandTotal();
-      showToast(item.used ? '已核銷' : '已取消核銷');
+      showToast(item.used ? '✅ 已核銷' : '🔄 已取消核銷');
     }
 
     function updateGrandTotal() {
@@ -479,14 +414,8 @@ nav {
       document.getElementById(`nav-${pageName}`).classList.add('active');
 
       if (pageName === 'dash') {
-        const dashGrid = document.getElementById('dashboard-grid');
-        const sortedApps = [...apps].sort((a, b) => {
-          const activeA = selection[a].filter(v => !v.used).length > 0 ? 1 : 0;
-          const activeB = selection[b].filter(v => !v.used).length > 0 ? 1 : 0;
-          return activeB - activeA;
-        });
         dashGrid.innerHTML = '';
-        sortedApps.forEach(app => {
+        apps.forEach(app => {
           dashGrid.innerHTML += `
             <div class="dash-item" id="card-${app}">
               <div class="app-name" style="font-size:0.95rem">${app}</div>
@@ -494,10 +423,15 @@ nav {
               <div class="s-amount">需消費: <span id="s-${app}">$0</span></div>
               <div class="mini-slots" id="mini-${app}"></div>
             </div>`;
-          renderDashCard(app);
         });
-        updateGrandTotal();
+
+        // 確保 DOM 建立完成後再渲染
+        setTimeout(() => {
+          apps.forEach(app => renderDashCard(app));
+          updateGrandTotal();
+        }, 10);
       }
+
       if (pageName === 'stats') loadStats();
     }
 
@@ -517,24 +451,20 @@ nav {
         selection[item.payment_tool].push({
           val: item.reward,
           used: item.amount_paid === 1,
-          slot_index: item.slot_index
+          slot_index: item.slot_index || 0
         });
       });
 
       apps.forEach(app => {
-        selection[app].sort((a, b) => a.slot_index - b.slot_index);
+        selection[app].sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+        selection[app] = selection[app].slice(0, 3); // 確保最多3張
         renderInputSlots(app);
       });
 
       document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong>`;
       document.getElementById('user-info').innerHTML = `
-        <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <span>期數：${period} | ID: ${myToken}</span>
-        </div>
-        <div style="font-size: 0.8rem; line-height: 1.6;">
-          <span style="opacity: 0.8;">Made by 蟬知夏 | Support:</span> 
-          <a href="mailto:support@charliechacha.com" style="color: inherit; text-decoration: underline; opacity: 0.8;">support@charliechacha.com</a>
-        </div>
+        期數：${period} | ID: ${myToken}<br>
+        Made by 蟬知夏 | Support: <a href="mailto:support@charliechacha.com">support@charliechacha.com</a>
       `;
     }
 
@@ -543,6 +473,7 @@ nav {
       const originalText = btn.innerText;
       btn.innerText = "儲存中...";
       btn.disabled = true;
+
       const period = getMacauPeriodTag();
 
       await _supabase.from('lottery_records')
@@ -570,7 +501,7 @@ nav {
         await _supabase.from('lottery_records').insert(records);
       }
 
-      showToast('儲存成功！請將帶 ID 的網址存入書籤以防遺失。');
+      showToast('儲存成功！');
       btn.innerText = originalText;
       btn.disabled = false;
       await loadData();
@@ -604,28 +535,25 @@ nav {
           let counts = [];
           denominations.forEach(d => {
             if (appData[d]) {
-              counts.push(`${d}元x${appData[d]}`);
+              counts.push(`${d}元×${appData[d]}`);
               subtotal += d * appData[d];
             }
           });
           if (subtotal > 0) {
-            html += `<div style="font-size:0.9rem; margin-left:10px;">${app}: ${counts.join(', ')} (共$${subtotal})</div>`;
+            html += `<div style="font-size:0.9rem; margin:8px 0 0 10px;">${app}: ${counts.join(', ')} (共$${subtotal})</div>`;
           }
         });
-        html += `</div><hr style="border:0.5px solid #eee;">`;
+        html += `</div><hr style="border:0.5px solid #eee; margin:12px 0;">`;
       });
-      statsContainer.innerHTML = html || '尚無歷史紀錄';
+      statsContainer.innerHTML = html || '<p style="text-align:center;color:#6b7280;">尚無歷史紀錄</p>';
     }
 
-    // 啟動程式
+    // 啟動
     if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
     const day = new Date().getDay();
     if ([0, 5, 6].includes(day)) showPage('input');
     else showPage('dash');
     loadData();
-  
-</script>
-
-
+  </script>
 </body>
 </html>
