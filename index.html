@@ -345,16 +345,34 @@ nav {
       setTimeout(() => toast.remove(), 1600);
     }
 
-    function getMacauPeriodTag() {
-      const now = new Date();
-      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
-      const macauTime = new Date(utcTime + 8 * 3600000);
-      macauTime.setHours(0, 0, 0, 0);
-      const day = macauTime.getDay();
-      const daysToSubtract = (day - 5 + 7) % 7;
-      macauTime.setDate(macauTime.getDate() - daysToSubtract);
-      return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
-    }
+  function getMacauPeriodTag() {
+  const now = new Date();
+  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+  const macauTime = new Date(utcTime + 8 * 3600000);
+  
+  const day = macauTime.getDay(); // 0是週日, 1-6是週一至六
+
+  // 如果你希望週一(1)到週四(4)不抓上週五的資料
+  // 這裡我們強迫週一到週四回傳一個「未來」或「空白」的標籤，或者調整基準點
+  // 但通常消費獎賞是每週五發放，有效期到下週四。
+  
+  // 修正邏輯：計算基準點為「本週五」
+  // 如果今天是週一至週四，邏輯上你可能想看到的是「即將到來的週五」或「空的」
+  // 若要嚴格對齊「每週五更新」，原邏輯沒錯，錯在它會一直往回找。
+  
+  macauTime.setHours(0, 0, 0, 0);
+  const daysToSubtract = (day - 5 + 7) % 7;
+  
+  // 如果你想讓週一(1)變成新開始，不回傳舊的週五：
+  if (day >= 1 && day <= 4) {
+      // 這裡可以回傳一個特定格式，讓資料抓不到，或是回傳「當週週五」
+      // 範例：週一至週四顯示為「尚未開始」或「預約期」
+      // return "pending"; 
+  }
+
+  macauTime.setDate(macauTime.getDate() - daysToSubtract);
+  return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
+}
 
     // 初始化
     apps.forEach(app => {
