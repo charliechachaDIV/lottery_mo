@@ -320,12 +320,35 @@ nav {
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // --- 1. 將這段邏輯放在這裡 ---
+    function getUserId() {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = params.get('id');
+      
+      if (urlId) {
+        // 如果網址有 id，強制使用網址的並同步到本地儲存
+        localStorage.setItem('lottery_token', urlId);
+        return urlId;
+      }
+      
+      // 網址沒 id，才看本地儲存，真的都沒紀錄才生隨機 ID
+      let localId = localStorage.getItem('lottery_token');
+      if (!localId) {
+        localId = 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('lottery_token', localId);
+      }
+      return localId;
+    }
+    
+    // --- 2. 呼叫函式取得 myToken ---
+    let myToken = getUserId();
+    
     const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
     const denominations = [10, 20, 50, 100, 200];
 
     let selection = {};
-    let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('lottery_token', myToken);
+    //let myToken = localStorage.getItem('lottery_token') || 'user_' + Math.random().toString(36).substr(2, 9);
+    //localStorage.setItem('lottery_token', myToken);
 
     const inputList = document.getElementById('input-list');
     const dashGrid = document.getElementById('dashboard-grid');
