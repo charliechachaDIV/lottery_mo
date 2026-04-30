@@ -282,7 +282,7 @@ nav {
     <div id="page-input" class="page">
       <div class="card">
         <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.25rem; color:#1f2937;">
-          本期獎券登記 
+          本期獎券登記V2 
           <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
         </h2>
         <div id="input-list"></div>
@@ -320,28 +320,54 @@ nav {
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- 1. 將這段邏輯放在這裡 ---
-    function getUserId() {
-      const params = new URLSearchParams(window.location.search);
-      const urlId = params.get('id');
-      
-      if (urlId) {
-        // 如果網址有 id，強制使用網址的並同步到本地儲存
-        localStorage.setItem('lottery_token', urlId);
-        return urlId;
-      }
-      
-      // 網址沒 id，才看本地儲存，真的都沒紀錄才生隨機 ID
-      let localId = localStorage.getItem('lottery_token');
-      if (!localId) {
-        localId = 'user_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('lottery_token', localId);
-      }
-      return localId;
+// --- 核心 ID 邏輯開始 ---
+function getUserId() {
+  const params = new URLSearchParams(window.location.search);
+  const urlId = params.get('id');
+  
+  // 定義合格格式：必須是字串、user_ 開頭、長度至少 10 位
+  const isFormatValid = (id) => {
+    return id && 
+           typeof id === 'string' && 
+           id.startsWith('user_') && 
+           id.length >= 10;
+  };
+
+  let localId = localStorage.getItem('lottery_token');
+
+  // 1. 如果網址有 ID
+  if (urlId) {
+    if (isFormatValid(urlId)) {
+      // 格式正確，強制覆蓋本地儲存
+      localStorage.setItem('lottery_token', urlId);
+      return urlId;
+    } else {
+      // 網址 ID 格式不對，我們不存它，並在 Console 提醒（可選）
+      console.warn("網址 ID 格式不符規則，不予採用");
     }
-    
-    // --- 2. 呼叫函式取得 myToken ---
-    let myToken = getUserId();
+  }
+  
+  // 2. 如果網址沒 ID 或格式不對，看本地存的是否合格
+  if (isFormatValid(localId)) {
+    return localId;
+  }
+  
+  // 3. 如果以上皆非（新用戶或本地資料損壞），產生標準格式的新 ID
+  const newId = 'user_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('lottery_token', newId);
+  return newId;
+}
+
+// 取得最終要使用的 myToken
+let myToken = getUserId();
+
+// 自動修正：如果現在網址上沒有 id 參數，我們把它補上去，方便用戶分享
+const currentParams = new URLSearchParams(window.location.search);
+if (!currentParams.has('id')) {
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + myToken;
+    window.history.replaceState({ path: newUrl }, '', newUrl);
+}
+// --- 核心 ID 邏輯結束 ---
     
     const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
     const denominations = [10, 20, 50, 100, 200];
