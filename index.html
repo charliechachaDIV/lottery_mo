@@ -399,22 +399,16 @@ function getMacauPeriodTag() {
   const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
   const macauTime = new Date(utcTime + 8 * 3600000);
   
-  const day = macauTime.getDay(); // 0是週日, 1-6 是週一至週六
-  // 【核心修改】
-  // 如果今天是週一(1)、週二(2)、週三(3)、週四(4)
-  // 我們回傳一個「未來」的標籤（下一個週五），這樣資料庫就不會抓到舊資料
-  if (day >= 1 && day <= 4) {
-    const daysToFriday = (5 - day + 7) % 7;
-    macauTime.setDate(macauTime.getDate() + daysToFriday);
-  } else {
-    // 修改：計算距離「最近的週五」差幾天
-  // 邏輯：(當前星期 - 5 + 7) % 7 
-  // 例如：週一(1)，(1-5+7)%7 = 3，表示往前推 3 天就是上個週五
+  const day = macauTime.getDay(); // 0=週日, 1-6=週一至週六
+
+  // 【修正】統一往回找「最近的上一個週五（含今天若是週五）」
+  // 週五(5) → 0天前、週六(6) → 1天前、週日(0) → 2天前
+  // 週一(1) → 3天前、週二(2) → 4天前、週三(3) → 5天前、週四(4) → 6天前
+  // 確保整個週五~下週四都映射到同一個 period_tag
   const daysToSubtract = (day - 5 + 7) % 7;
   macauTime.setDate(macauTime.getDate() - daysToSubtract);
-  }
 
- macauTime.setHours(0, 0, 0, 0);
+  macauTime.setHours(0, 0, 0, 0);
   return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
 }
 
