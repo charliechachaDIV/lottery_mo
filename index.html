@@ -320,7 +320,7 @@ nav {
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- 核心 ID 邏輯開始 ---
+// --- 核心 ID 邏輯開始 (修正版) ---
 function getUserId() {
   const params = new URLSearchParams(window.location.search);
   const urlId = params.get('id');
@@ -334,6 +334,27 @@ function getUserId() {
   };
 
   let localId = localStorage.getItem('lottery_token');
+
+  // 1. 優先採用網址傳進來的 ID
+  if (urlId && isFormatValid(urlId)) {
+    localStorage.setItem('lottery_token', urlId);
+    return urlId;
+  }
+  
+  // 2. 次要採用本地儲存的 ID
+  if (localId && isFormatValid(localId)) {
+    return localId;
+  }
+  
+  // 3. 都不存在才建立新 ID
+  const newId = 'user_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('lottery_token', newId);
+  return newId;
+}
+
+// 取得最終要使用的 myToken (移除 replaceState 避免跨網域 iframe 報錯)
+let myToken = getUserId();
+// --- 核心 ID 邏輯結束 ---
 
   // 1. 如果網址有 ID
   if (urlId) {
