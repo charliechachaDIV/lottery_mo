@@ -315,41 +315,37 @@ nav {
     <div id="user-info" class="status">載入中...</div>
   </div>
 
-<script>
+  <script>
     const SUPABASE_URL = 'https://najwaxbrovbzjqomakqh.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- 核心 ID 邏輯開始 ---
-    function getUserId() {
-      const params = new URLSearchParams(window.location.search);
-      const urlId = params.get('id');
-      
-      const isFormatValid = (id) => {
-        return id && 
-               typeof id === 'string' && 
-               id.startsWith('user_') && 
-               id.length >= 10;
-      };
+// --- 核心 ID 邏輯開始（純內部注入版，不碰網址） ---
+function getUserId() {
+  // 定義合格格式：必須是字串、user_ 開頭、長度至少 10 位
+  const isFormatValid = (id) => {
+    return id &&
+           typeof id === 'string' &&
+           id.startsWith('user_') &&
+           id.length >= 10;
+  };
 
-      let localId = localStorage.getItem('lottery_token');
+  const localId = localStorage.getItem('lottery_token');
 
-      if (urlId && isFormatValid(urlId)) {
-        localStorage.setItem('lottery_token', urlId);
-        return urlId;
-      }
-      
-      if (localId && isFormatValid(localId)) {
-        return localId;
-      }
-      
-      const newId = 'user_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('lottery_token', newId);
-      return newId;
-    }
+  // 1. 本地已有合格的 id，直接沿用
+  if (isFormatValid(localId)) {
+    return localId;
+  }
 
-    let myToken = getUserId();
-    // --- 核心 ID 邏輯結束 ---
+  // 2. 新用戶或本地資料損壞／格式不符，產生標準格式的新 ID
+  const newId = 'user_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('lottery_token', newId);
+  return newId;
+}
+
+// 取得最終要使用的 myToken（完全不讀、不寫網址列，網址永遠保持乾淨）
+let myToken = getUserId();
+// --- 核心 ID 邏輯結束 ---
     
     const apps = ['澳門中銀', '工銀e支付', 'MPay', '豐付寶', '支付寶(澳門)', 'UePay', 'LusoPay', '廣發支付'];
     const denominations = [10, 20, 50, 100, 200];
@@ -374,49 +370,48 @@ nav {
       setTimeout(() => toast.remove(), 1600);
     }
 
-    function getMacauPeriodTag() {
-      const now = new Date();
-      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
-      const macauTime = new Date(utcTime + 8 * 3600000);
-      
-      const day = macauTime.getDay();
-      const daysToSubtract = (day - 5 + 7) % 7;
-      macauTime.setDate(macauTime.getDate() - daysToSubtract);
+function getMacauPeriodTag() {
+  const now = new Date();
+  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+  const macauTime = new Date(utcTime + 8 * 3600000);
+  
+  const day = macauTime.getDay(); // 0=週日, 1-6=週一至週六
 
-      macauTime.setHours(0, 0, 0, 0);
-      return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
-    }
+  // 【修正】統一往回找「最近的上一個週五（含今天若是週五）」
+  // 週五(5) → 0天前、週六(6) → 1天前、週日(0) → 2天前
+  // 週一(1) → 3天前、週二(2) → 4天前、週三(3) → 5天前、週四(4) → 6天前
+  // 確保整個週五~下週四都映射到同一個 period_tag
+  const daysToSubtract = (day - 5 + 7) % 7;
+  macauTime.setDate(macauTime.getDate() - daysToSubtract);
 
-    // 初始化 UI 框架
-    function initUI() {
-      inputList.innerHTML = '';
-      dashGrid.innerHTML = '';
-      
-      apps.forEach(app => {
-        selection[app] = [];
-        inputList.innerHTML += `
-          <div class="app-row">
-            <div class="app-info">
-              <span class="app-name">${app}</span>
-              <span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span>
-            </div>
-            <div class="voucher-slots" id="slots-${app}"></div>
-            <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div>
-          </div>`;
-        dashGrid.innerHTML += `
-          <div class="dash-item" id="card-${app}">
-            <div class="app-name" style="font-size:0.95rem">${app}</div>
-            <span class="v-amount" id="v-${app}">$0</span>
-            <div class="s-amount">需消費: <span id="s-${app}">$0</span></div>
-            <div class="mini-slots" id="mini-${app}"></div>
-          </div>`;
-        renderInputSlots(app);
-      });
-    }
+  macauTime.setHours(0, 0, 0, 0);
+  return `${macauTime.getFullYear()}-${String(macauTime.getMonth()+1).padStart(2,'0')}-${String(macauTime.getDate()).padStart(2,'0')}`;
+}
+
+    // 初始化
+    apps.forEach(app => {
+      selection[app] = [];
+      inputList.innerHTML += `
+        <div class="app-row">
+          <div class="app-info">
+            <span class="app-name">${app}</span>
+            <span id="total-${app}" style="color:var(--primary);font-weight:bold;">$0</span>
+          </div>
+          <div class="voucher-slots" id="slots-${app}"></div>
+          <div class="btn-group">${denominations.map(d => `<button class="chip" onclick="addVoucher('${app}',${d})">${d}</button>`).join('')}</div>
+        </div>`;
+      dashGrid.innerHTML += `
+        <div class="dash-item" id="card-${app}">
+          <div class="app-name" style="font-size:0.95rem">${app}</div>
+          <span class="v-amount" id="v-${app}">$0</span>
+          <div class="s-amount">需消費: <span id="s-${app}">$0</span></div>
+          <div class="mini-slots" id="mini-${app}"></div>
+        </div>`;
+      renderInputSlots(app);
+    });
 
     function renderInputSlots(app) {
       const container = document.getElementById(`slots-${app}`);
-      if(!container) return;
       container.innerHTML = '';
       for (let i = 0; i < 3; i++) {
         const item = selection[app][i];
@@ -438,27 +433,34 @@ nav {
       }
     }
 
-    function renderDashCard(app) {
-      const container = document.getElementById(`mini-${app}`);
-      if (!container) return;
-      container.innerHTML = '';
+function renderDashCard(app) {
+  const container = document.getElementById(`mini-${app}`);
+  if (!container) return; // 確保容器存在
+  container.innerHTML = '';
 
-      const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
+  // 1. 計算該 APP 的總額（原本的寫法）
+  const totalAll = selection[app].reduce((a, b) => a + b.val, 0);
+  
+  // 2. 修改：計算「剩餘可用」金額（只算還沒 used 的）
+  const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
 
-      document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
-      document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
-      
-      const cardEl = document.getElementById(`card-${app}`);
-      if(cardEl) cardEl.style.opacity = activeTotal > 0 ? "1" : "0.4";
+  // 3. 更新介面顯示
+  // 將 v-${app} 改為顯示 activeTotal (剩餘金額)
+  document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
+  document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
+  
+  // 如果該平台所有券都用完了，讓卡片變淡
+  document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
 
-      selection[app].forEach((item, index) => {
-        const mini = document.createElement('div');
-        mini.className = `mini-slot ${item.used ? 'used' : ''}`;
-        mini.innerText = `$${item.val}`;
-        mini.onclick = () => toggleUsed(app, index);
-        container.appendChild(mini);
-      });
-    }
+  // 4. 生成小格子
+  selection[app].forEach((item, index) => {
+    const mini = document.createElement('div');
+    mini.className = `mini-slot ${item.used ? 'used' : ''}`;
+    mini.innerText = `$${item.val}`;
+    mini.onclick = () => toggleUsed(app, index);
+    container.appendChild(mini);
+  });
+}
 
     async function toggleUsed(app, slotIndex) {
       const item = selection[app][slotIndex];
@@ -495,102 +497,88 @@ nav {
         grandTotal += allV;
         grandSpend += activeV;
       });
-      const gt = document.getElementById('grand-total');
-      const gs = document.getElementById('grand-spend');
-      if(gt) gt.innerText = `$${grandTotal}`;
-      if(gs) gs.innerText = `$${(grandSpend * 3).toFixed(0)}`;
+      document.getElementById('grand-total').innerText = `$${grandTotal}`;
+      document.getElementById('grand-spend').innerText = `$${(grandSpend * 3).toFixed(0)}`;
     }
 
-    function showPage(pageName) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      
-      const targetPage = document.getElementById(`page-${pageName}`);
-      const targetBtn = document.getElementById(`nav-${pageName}`);
-      if(targetPage) targetPage.classList.add('active');
-      if(targetBtn) targetBtn.classList.add('active');
+function showPage(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${pageName}`).classList.add('active');
+  document.getElementById(`nav-${pageName}`).classList.add('active');
 
-      if (pageName === 'dash') {
-        const sortedApps = [...apps].sort((a, b) => {
-          const activeA = selection[a].filter(v => !v.used).length > 0 ? 1 : 0;
-          const activeB = selection[b].filter(v => !v.used).length > 0 ? 1 : 0;
-          return activeB - activeA;
-        });
+  if (pageName === 'dash') {
+    const dashGrid = document.getElementById('dashboard-grid'); // 重新定位容器
+    
+    // 1. 進行排序邏輯
+    const sortedApps = [...apps].sort((a, b) => {
+      const activeA = selection[a].filter(v => !v.used).length > 0 ? 1 : 0;
+      const activeB = selection[b].filter(v => !v.used).length > 0 ? 1 : 0;
+      return activeB - activeA;
+    });
 
-        dashGrid.innerHTML = '';
-        sortedApps.forEach(app => {
-          dashGrid.innerHTML += `
-            <div class="dash-item" id="card-${app}">
-              <div class="app-name" style="font-size:0.95rem">${app}</div>
-              <span class="v-amount" id="v-${app}">$0</span>
-              <div class="s-amount">需消費: <span id="s-${app}">$0</span></div>
-              <div class="mini-slots" id="mini-${app}"></div>
-            </div>`;
-        });
+    // 2. 清空並重新注入 HTML
+    dashGrid.innerHTML = '';
+    sortedApps.forEach(app => {
+      dashGrid.innerHTML += `
+        <div class="dash-item" id="card-${app}">
+          <div class="app-name" style="font-size:0.95rem">${app}</div>
+          <span class="v-amount" id="v-${app}">$0</span>
+          <div class="s-amount">需消費: <span id="s-${app}">$0</span></div>
+          <div class="mini-slots" id="mini-${app}"></div>
+        </div>`;
+    });
 
-        sortedApps.forEach(app => {
-          renderDashCard(app);
-        });
+    // 3. 關鍵：在 HTML 注入完畢後，再跑一遍 render，按鈕才會綁定成功
+    sortedApps.forEach(app => {
+      renderDashCard(app);
+    });
 
-        updateGrandTotal();
-      }
-      if (pageName === 'stats') loadStats();
-    }
+    updateGrandTotal();
+  }
+  if (pageName === 'stats') loadStats();
+}
 
-    async function loadData() {
+async function loadData() {
       const period = getMacauPeriodTag();
-      
-      try {
-        const { data, error } = await _supabase
-          .from('lottery_records')
-          .select('*')
-          .eq('user_token', myToken)
-          .eq('period_tag', period)
-          .eq('is_discarded', false);
+      const { data } = await _supabase
+        .from('lottery_records')
+        .select('*')
+        .eq('user_token', myToken)
+        .eq('period_tag', period)
+        .eq('is_discarded', false);
 
-        if (error) console.error("Supabase 讀取錯誤：", error);
+      apps.forEach(app => selection[app] = []);
 
-        apps.forEach(app => selection[app] = []);
-
-        (data || []).forEach(item => {
-          if (!selection[item.payment_tool]) selection[item.payment_tool] = [];
-          selection[item.payment_tool].push({
-            val: item.reward,
-            used: item.amount_paid === 1,
-            slot_index: item.slot_index
-          });
+      (data || []).forEach(item => {
+        if (!selection[item.payment_tool]) selection[item.payment_tool] = [];
+        selection[item.payment_tool].push({
+          val: item.reward,
+          used: item.amount_paid === 1,
+          slot_index: item.slot_index
         });
+      });
 
-        apps.forEach(app => {
-          if (!selection[app]) selection[app] = [];
-          selection[app].sort((a, b) => a.slot_index - b.slot_index);
-          renderInputSlots(app);
-        });
-      } catch (err) {
-        console.error("載入發生異常：", err);
-      } finally {
-        // 無論 Supabase 成功或失敗，都必須解除「載入中...」
-        document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong>`;
-        document.getElementById('user-info').innerHTML = `
-          <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <span>期數：${period} | ID: ${myToken}</span>
-            <a href="https://www.charliechacha.com/" target="_parent" style="display: flex; align-items: center; text-decoration: none;">
-              <img src="https://www.charliechacha.com/wp-content/uploads/pages/logopic.png" alt="蟬知夏" style="height: 20px; width: auto; opacity: 0.9;">
-            </a>
-          </div>
-          <div style="font-size: 0.8rem; line-height: 1.6;">
-            <span style="opacity: 0.8;">Made by 蟬知夏 | Support:</span> 
-            <a href="mailto:support@charliechacha.com" style="color: inherit; text-decoration: underline; opacity: 0.8;">support@charliechacha.com</a>
-          </div>
-        `;
-        
-        // 重新重新整理目前的頁面視圖
-        const currentActiveNav = document.querySelector('nav button.active');
-        if(currentActiveNav) {
-            const pageName = currentActiveNav.id.replace('nav-', '');
-            showPage(pageName);
-        }
-      }
+      apps.forEach(app => {
+        if (!selection[app]) selection[app] = [];
+        selection[app].sort((a, b) => a.slot_index - b.slot_index);
+        renderInputSlots(app);
+      });
+
+      document.getElementById('today-hint').innerHTML = `本期 <strong>${period}</strong>`;
+     // 修改這行，將原來的內建文字替換成這個 HTML 結構
+      document.getElementById('user-info').innerHTML = `
+        <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>期數：${period} | ID: ${myToken}</span>
+          <a href="https://www.charliechacha.com/" target="_parent" style="display: flex; align-items: center; text-decoration: none;">
+            <img src="https://www.charliechacha.com/wp-content/uploads/pages/logopic.png" alt="蟬知夏" style="height: 20px; width: auto; opacity: 0.9;">
+          </a>
+        </div>
+        <div style="font-size: 0.8rem; line-height: 1.6;">
+          <span style="opacity: 0.8;">Made by 蟬知夏 | Support:</span> 
+          <a href="mailto:support@charliechacha.com" style="color: inherit; text-decoration: underline; opacity: 0.8;">support@charliechacha.com</a>
+        </div>
+      `;
     }
 
     async function saveData() {
@@ -634,64 +622,57 @@ nav {
       showPage('dash');
     }
 
+    // 【已修正統計部分】只讀取 is_discarded = false 的資料
     async function loadStats() {
       statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史獎券（已排除廢棄資料）...</div>';
 
-      try {
-        const { data } = await _supabase
-          .from('lottery_records')
-          .select('period_tag, payment_tool, reward')
-          .eq('is_discarded', false)
-          .order('period_tag', { ascending: false });
+      const { data } = await _supabase
+        .from('lottery_records')
+        .select('period_tag, payment_tool, reward')
+        .eq('is_discarded', false)
+        .order('period_tag', { ascending: false });
 
-        const periods = {};
-        (data || []).forEach(row => {
-          if (!periods[row.period_tag]) periods[row.period_tag] = {};
-          if (!periods[row.period_tag][row.payment_tool]) periods[row.period_tag][row.payment_tool] = {};
-          periods[row.period_tag][row.payment_tool][row.reward] = (periods[row.period_tag][row.payment_tool][row.reward] || 0) + 1;
-        });
+      const periods = {};
+      (data || []).forEach(row => {
+        if (!periods[row.period_tag]) periods[row.period_tag] = {};
+        if (!periods[row.period_tag][row.payment_tool]) periods[row.period_tag][row.payment_tool] = {};
+        periods[row.period_tag][row.payment_tool][row.reward] = (periods[row.period_tag][row.payment_tool][row.reward] || 0) + 1;
+      });
 
-        let html = '';
-        const currentPeriod = getMacauPeriodTag();
-        Object.keys(periods).sort((a,b) => b.localeCompare(a)).forEach(tag => {
-          const isCurrent = tag === currentPeriod;
-          html += `<div class="stats-period"><div class="stats-period-header"><span>${tag} ${isCurrent ? '（本期）' : ''}</span></div>`;
-          apps.forEach(app => {
-            const appData = periods[tag][app] || {};
-            let denomHTML = '';
-            let subtotal = 0;
-            denominations.forEach(d => {
-              const count = appData[d] || 0;
-              if (count > 0) {
-                denomHTML += `<span class="denom-item">${d}元 × ${count}張</span>`;
-                subtotal += d * count;
-              }
-            });
-            if (denomHTML || subtotal > 0) {
-              html += `<div class="app-row-stats"><div class="app-name-stats">${app}</div><div class="denom-list">${denomHTML || '<span style="color:#9ca3af;">無券</span>'}</div><div style="font-weight:700;color:var(--primary);">$${subtotal}</div></div>`;
+      let html = '';
+      const currentPeriod = getMacauPeriodTag();
+      Object.keys(periods).sort((a,b) => b.localeCompare(a)).forEach(tag => {
+        const isCurrent = tag === currentPeriod;
+        html += `<div class="stats-period"><div class="stats-period-header"><span>${tag} ${isCurrent ? '（本期）' : ''}</span></div>`;
+        apps.forEach(app => {
+          const appData = periods[tag][app] || {};
+          let denomHTML = '';
+          let subtotal = 0;
+          denominations.forEach(d => {
+            const count = appData[d] || 0;
+            if (count > 0) {
+              denomHTML += `<span class="denom-item">${d}元 × ${count}張</span>`;
+              subtotal += d * count;
             }
           });
-          html += `</div>`;
+          if (denomHTML || subtotal > 0) {
+            html += `<div class="app-row-stats"><div class="app-name-stats">${app}</div><div class="denom-list">${denomHTML || '<span style="color:#9ca3af;">無券</span>'}</div><div style="font-weight:700;color:var(--primary);">$${subtotal}</div></div>`;
+          }
         });
+        html += `</div>`;
+      });
 
-        statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何有效期數紀錄</p>`;
-      } catch(e) {
-        statsContainer.innerHTML = `<p style="text-align:center;color:#6b7280;padding:60px;">載入失敗</p>`;
-      }
+      statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何有效期數紀錄</p>`;
     }
 
-    // 啟動入口
-    document.addEventListener('DOMContentLoaded', () => {
-      if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
+    // 啟動
+    if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
 
-      initUI();
+    const day = new Date().getDay();
+    if ([0, 5, 6].includes(day)) showPage('input');
+    else showPage('dash');
 
-      const day = new Date().getDay();
-      if ([0, 5, 6].includes(day)) showPage('input');
-      else showPage('dash');
-
-      loadData();
-    });
-</script>
+    loadData();
+  </script>
 </body>
 </html>
