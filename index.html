@@ -299,19 +299,18 @@
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- 核心 ID 邏輯開始（支援同步連結 + 聰明淨化網址） ---
+    // --- 核心 ID 邏輯開始 ---
     function getUserId() {
       const isFormatValid = (id) => id && typeof id === 'string' && id.startsWith('user_') && id.length >= 10;
       
       const params = new URLSearchParams(window.location.search);
-      const syncId = params.get('sync') || params.get('id');
+      const urlId = params.get('id');
 
-      if (syncId && isFormatValid(syncId)) {
+      if (urlId && isFormatValid(urlId)) {
         // 1. 存入本地
-        localStorage.setItem('lottery_token', syncId);
+        localStorage.setItem('lottery_token', urlId);
         
-        // 2. 聰明淨化網址：只刪除 sync 和 id，保留 FS=1 等其他參數
-        params.delete('sync');
+        // 2. 聰明淨化網址：只刪除 id，保留 FS=1 等其他參數
         params.delete('id');
         
         let cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -321,7 +320,7 @@
         
         window.history.replaceState({}, document.title, cleanUrl);
         
-        return syncId;
+        return urlId;
       }
 
       // 3. 找本地 localStorage
@@ -360,21 +359,6 @@
       toast.textContent = msg;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 2500);
-    }
-
-    // 產生並複製同步連結
-    function copySyncLink() {
-      const syncUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?sync=" + myToken;
-      
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(syncUrl).then(() => {
-          showToast('✅ 專屬同步連結已複製！請在其他裝置貼上開啟');
-        }).catch(err => {
-          prompt('請手動複製以下您的專屬同步連結：', syncUrl);
-        });
-      } else {
-        prompt('請手動複製以下您的專屬同步連結：', syncUrl);
-      }
     }
 
     function getMacauPeriodTag() {
@@ -566,12 +550,6 @@
           </a>
         </div>
         
-        <div style="margin: 12px 0;">
-          <button onclick="copySyncLink()" style="background:var(--soft-blue); color:var(--primary); border:1px solid var(--primary); padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.85rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:all 0.2s;">
-            🔗 複製跨裝置同步連結
-          </button>
-        </div>
-
         <div style="font-size: 0.8rem; line-height: 1.6;">
           <span style="opacity: 0.8;">Made by 蟬知夏 | Support:</span> 
           <a href="mailto:support@charliechacha.com" style="color: inherit; text-decoration: underline; opacity: 0.8;">support@charliechacha.com</a>
