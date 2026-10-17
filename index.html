@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>社區消費大獎賞2026 核銷小助手 </title>
+  <title>社區消費大獎賞2026 核銷小助手</title>
   <meta name="description" content="2026消費獎賞實時核銷助手，支援MPay、中銀等8大平台，自動計算3倍門檻。">
   <meta name="keywords" content="2026消費獎賞, 澳門消費獎賞, 核銷助手, 3倍門檻">
   <meta property="og:title" content="2026消費獎賞 核銷小助手 - 點擊格子即時紀錄核銷">
@@ -263,7 +263,7 @@
     <div id="page-input" class="page">
       <div class="card">
         <h2 style="margin:0 0 12px; display:flex; justify-content:space-between; font-size:1.25rem; color:#1f2937;">
-          本期獎券登記V3.2 
+          本期獎券登記V3.3 
           <small id="today-hint" style="color:#0066cc; font-size:0.9rem; font-weight:600;"></small>
         </h2>
         <div id="input-list"></div>
@@ -301,47 +301,42 @@
     const SUPABASE_KEY = 'sb_publishable_SjL1VX7VoFzEX5tcYnMKsA_eE05FkNS';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- 核心 ID 邏輯開始（修復 Safari/Chrome 失憶版） ---
+    // --- 核心 ID 邏輯開始（極簡直球版） ---
     function getUserId() {
       const params = new URLSearchParams(window.location.search);
       const urlId = params.get('id');
 
-      const isFormatValid = (id) => {
-        return id && typeof id === 'string' && id.startsWith('user_') && id.length >= 10;
-      };
+      // 定義合格的 ID 格式
+      const isValid = (id) => id && typeof id === 'string' && id.startsWith('user_') && id.length >= 10;
 
-      let localId = localStorage.getItem('lottery_token');
-      let finalToken = '';
-
-      // 1. 【反轉優先權：本地稱王】優先檢查本地有沒有合格的 ID！
-      // 只要本地有資料，就絕對用它，不准舊網址來覆蓋！
-      if (isFormatValid(localId)) {
-        finalToken = localId;
-      } 
-      // 2. 如果本地沒資料，才去讀取網址的 ID
-      else if (urlId && isFormatValid(urlId)) {
+      // 1. 如果網址有帶 ID（例如你從外層傳進來的），直接存起來並使用
+      if (isValid(urlId)) {
         localStorage.setItem('lottery_token', urlId);
-        finalToken = urlId;
-      } 
-      // 3. 真的什麼都沒有，才產生全新的 ID
-      else {
-        finalToken = 'user_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('lottery_token', finalToken);
+        return urlId;
       }
 
-      // 【強制綁定網址】：確保上方的網址列隨時帶有最新的正確 ID
-      // 這樣使用者加書籤或複製網址時，才不會漏掉 ID，同時保留 FS=1 等其他參數
-      if (params.get('id') !== finalToken) {
-        params.set('id', finalToken);
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params.toString();
-        // 瞬間替換網址，不重新整理頁面
-        window.history.replaceState({ path: newUrl }, '', newUrl);
+      // 2. 如果網址沒有，去 LocalStorage 找找看以前有沒有存過
+      const localId = localStorage.getItem('lottery_token');
+      if (isValid(localId)) {
+        // 把找到的本地 ID 補回網址上，同時保留 FS=1 等其他參數
+        params.set('id', localId);
+        const newUrl = window.location.pathname + '?' + params.toString();
+        window.history.replaceState(null, '', newUrl);
+        return localId;
       }
 
-      return finalToken;
+      // 3. 網址沒有、本地也空了 ➡️ 沒關係，直接創一個全新的！
+      const newId = 'user_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('lottery_token', newId);
+
+      // 把新創的 ID 塞進網址列
+      params.set('id', newId);
+      const newUrl = window.location.pathname + '?' + params.toString();
+      window.history.replaceState(null, '', newUrl);
+
+      return newId;
     }
 
-    // 取得最終要使用的 myToken
     let myToken = getUserId();
     // --- 核心 ID 邏輯結束 ---
 
@@ -372,13 +367,8 @@
       const now = new Date();
       const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
       const macauTime = new Date(utcTime + 8 * 3600000);
+      const day = macauTime.getDay(); 
 
-      const day = macauTime.getDay(); // 0=週日, 1-6=週一至週六
-
-      // 統一往回找「最近的上一個週五（含今天若是週五）」
-      // 週五(5) → 0天前、週六(6) → 1天前、週日(0) → 2天前
-      // 週一(1) → 3天前、週二(2) → 4天前、週三(3) → 5天前、週四(4) → 6天前
-      // 確保整個週五~下週四都映射到同一個 period_tag
       const daysToSubtract = (day - 5 + 7) % 7;
       macauTime.setDate(macauTime.getDate() - daysToSubtract);
 
@@ -433,20 +423,15 @@
 
     function renderDashCard(app) {
       const container = document.getElementById(`mini-${app}`);
-      if (!container) return; // 確保容器存在
+      if (!container) return; 
       container.innerHTML = '';
 
-      // 計算「剩餘可用」金額（只算還沒 used 的）
       const activeTotal = selection[app].filter(v => !v.used).reduce((a, b) => a + b.val, 0);
 
-      // 更新介面顯示
       document.getElementById(`v-${app}`).innerText = `$${activeTotal}`;
       document.getElementById(`s-${app}`).innerText = `$${(activeTotal * 3).toFixed(0)}`;
-
-      // 如果該平台所有券都用完了，讓卡片變淡
       document.getElementById(`card-${app}`).style.opacity = activeTotal > 0 ? "1" : "0.4";
 
-      // 生成小格子
       selection[app].forEach((item, index) => {
         const mini = document.createElement('div');
         mini.className = `mini-slot ${item.used ? 'used' : ''}`;
@@ -504,14 +489,12 @@
       if (pageName === 'dash') {
         const dashGrid = document.getElementById('dashboard-grid'); 
 
-        // 1. 進行排序邏輯
         const sortedApps = [...apps].sort((a, b) => {
           const activeA = selection[a].filter(v => !v.used).length > 0 ? 1 : 0;
           const activeB = selection[b].filter(v => !v.used).length > 0 ? 1 : 0;
           return activeB - activeA;
         });
 
-        // 2. 清空並重新注入 HTML
         dashGrid.innerHTML = '';
         sortedApps.forEach(app => {
           dashGrid.innerHTML += `
@@ -523,7 +506,6 @@
             </div>`;
         });
 
-        // 3. 在 HTML 注入完畢後，再跑一遍 render，按鈕才會綁定成功
         sortedApps.forEach(app => {
           renderDashCard(app);
         });
@@ -616,7 +598,6 @@
       showPage('dash');
     }
 
-    // 只讀取 is_discarded = false 的資料
     async function loadStats() {
       statsContainer.innerHTML = '<div style="text-align:center;padding:60px;color:#6b7280;">正在載入歷史獎券（已排除廢棄資料）...</div>';
 
@@ -659,7 +640,6 @@
       statsContainer.innerHTML = html || `<p style="text-align:center;color:#6b7280;padding:60px;">還沒有任何有效期數紀錄</p>`;
     }
 
-    // 啟動
     if (isDevMode()) document.getElementById('nav-stats').style.display = 'flex';
 
     const day = new Date().getDay();
